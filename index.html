@@ -2,16 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>LUDO WARS – Ultimate Premium Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════════════════
-   RESET & CORE LAYOUT (100dvh, NO SCROLL ON GAMEPLAY)
+   1. CORE MOBILE RESET & FULL-PORTRAIT LAYOUT (100dvh)
 ════════════════════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0; padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
 :root {
-  --bg: #08090f;
+  --bg: #090a12;
   --neon: #00f5ff;
   --neon2: #ff00ff;
   --purple: #7700ff;
@@ -20,8 +24,8 @@
   --yellow: #ffdd00;
   --cyan: #00f5ff;
   --orange: #ffaa00;
-  --glass: rgba(255,255,255,0.05);
-  --border: rgba(0,245,255,0.25);
+  --glass: rgba(255,255,255,0.06);
+  --border: rgba(0,245,255,0.28);
   --dice-color: #00ff88;
 }
 html, body {
@@ -30,14 +34,17 @@ html, body {
   background: var(--bg);
   color: #fff;
   font-family: system-ui, -apple-system, sans-serif;
-  -webkit-tap-highlight-color: transparent;
   user-select: none;
-  transition: background 0.6s ease;
+  touch-action: manipulation;
+  transition: background 0.5s ease;
 }
-button { cursor: pointer; border: none; outline: none; font-family: inherit; }
+button {
+  cursor: pointer; border: none; outline: none;
+  font-family: inherit; touch-action: manipulation;
+}
 
 /* ════════════════════════════════════════════════════
-   ANIMATIONS & KEYFRAMES
+   2. KEYFRAME ANIMATIONS
 ════════════════════════════════════════════════════ */
 @keyframes pulseGlow {
   0%,100% { box-shadow: 0 0 20px var(--neon), 0 0 40px rgba(0,245,255,.3); transform: scale(1); }
@@ -47,29 +54,33 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
   0%,100% { text-shadow: 0 0 10px var(--neon), 0 0 20px var(--neon); }
   50% { text-shadow: 0 0 25px var(--neon), 0 0 50px var(--purple), 0 0 80px var(--neon2); }
 }
-@keyframes tokenHop {
+@keyframes tokenHopAnim {
   0%,100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-14px) scale(1.22); }
+  50% { transform: translateY(-13px) scale(1.22); }
 }
-@keyframes sparkleOut {
+@keyframes sparkleAnim {
   0% { opacity: 1; transform: scale(0.6) translate(-50%,-50%); }
   100% { opacity: 0; transform: scale(2.4) translate(-50%,-50%); }
 }
-@keyframes diceSpinAnim {
-  0% { transform: translate(-50%,-50%) rotate(0deg) scale(0.9); }
-  25% { transform: translate(-50%,-50%) rotate(-35deg) scale(1.15); }
-  50% { transform: translate(-50%,-50%) rotate(25deg) scale(0.95); }
-  75% { transform: translate(-50%,-50%) rotate(-15deg) scale(1.1); }
-  100% { transform: translate(-50%,-50%) rotate(0deg) scale(1); }
+@keyframes diceWobble {
+  0% { transform: rotate(0deg) scale(0.95); }
+  25% { transform: rotate(-25deg) scale(1.12); }
+  50% { transform: rotate(20deg) scale(0.95); }
+  75% { transform: rotate(-15deg) scale(1.08); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+@keyframes diceBreathAnim {
+  0%,100% { transform: scale(1); box-shadow: 0 0 16px var(--dice-color); }
+  50% { transform: scale(1.05); box-shadow: 0 0 28px var(--dice-color), 0 0 45px rgba(255,255,255,0.4); }
 }
 @keyframes dicePremiumGlow {
   0%,100% {
-    box-shadow: 0 0 20px var(--dice-color), 0 0 40px var(--neon2), inset 0 0 15px rgba(255,255,255,0.4);
-    filter: drop-shadow(0 0 10px #ff00ea);
+    box-shadow: 0 0 20px var(--dice-color), 0 0 40px #ff00ea, inset 0 0 12px rgba(255,255,255,0.5);
+    filter: drop-shadow(0 0 8px #ff00ea);
   }
   50% {
-    box-shadow: 0 0 40px var(--dice-color), 0 0 80px #fff, inset 0 0 25px rgba(255,255,255,0.8);
-    filter: drop-shadow(0 0 20px #00f5ff);
+    box-shadow: 0 0 35px var(--dice-color), 0 0 70px #00f5ff, inset 0 0 20px rgba(255,255,255,0.8);
+    filter: drop-shadow(0 0 16px #00f5ff);
   }
 }
 @keyframes swimFish {
@@ -78,33 +89,29 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
 }
 @keyframes floatGently {
   0%,100% { transform: translateY(0) rotate(0deg); }
-  33% { transform: translateY(-16px) rotate(6deg); }
-  66% { transform: translateY(-8px) rotate(-5deg); }
+  33% { transform: translateY(-14px) rotate(5deg); }
+  66% { transform: translateY(-7px) rotate(-4deg); }
 }
 @keyframes alienBob {
   0%,100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-8px) scale(1.08); }
+  50% { transform: translateY(-7px) scale(1.08); }
 }
 @keyframes confettiFall {
   0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
   100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 }
 @keyframes glowBorderPulse {
-  0%,100% { box-shadow: 0 0 8px currentColor; }
-  50% { box-shadow: 0 0 26px currentColor, 0 0 50px currentColor; }
+  0%,100% { box-shadow: 0 0 6px currentColor; }
+  50% { box-shadow: 0 0 22px currentColor, 0 0 44px currentColor; }
 }
 @keyframes rageFlashBar {
   0%,100% { box-shadow: 0 0 8px var(--red); }
-  50% { box-shadow: 0 0 35px var(--red), 0 0 70px var(--orange); }
+  50% { box-shadow: 0 0 30px var(--red), 0 0 60px var(--orange); }
 }
 @keyframes coinEarnPop {
   0% { transform: scale(1); }
   50% { transform: scale(1.45); color: #fff; }
   100% { transform: scale(1); }
-}
-@keyframes adButtonPulse {
-  0%,100% { transform: scale(1); box-shadow: 0 0 15px rgba(255,140,0,0.3); }
-  50% { transform: scale(1.03); box-shadow: 0 0 30px rgba(255,140,0,0.6); }
 }
 @keyframes snakeSlitherLeftToRight {
   0% { transform: translateX(-180px) translateY(0); }
@@ -115,13 +122,13 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
 }
 
 /* ════════════════════════════════════════════════════
-   SCREENS
+   3. SCREEN CONTAINERS
 ════════════════════════════════════════════════════ */
 .screen {
   position: fixed; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.35s ease;
 }
 .screen.hidden { opacity: 0; pointer-events: none; }
 
@@ -131,27 +138,23 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
   gap: 16px; z-index: 100;
 }
 #splash-logo {
-  width: 125px; height: 125px;
-  border-radius: 26px;
-  object-fit: cover;
+  width: 120px; height: 120px;
+  border-radius: 26px; object-fit: cover;
   animation: pulseGlow 1.6s ease-in-out infinite;
   border: 2px solid var(--neon);
 }
 #splash-logo-fallback {
-  width: 125px; height: 125px;
-  border-radius: 26px;
+  width: 120px; height: 120px; border-radius: 26px;
   background: linear-gradient(135deg, var(--purple), var(--neon));
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 11px; font-weight: 700;
+  font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700;
   text-align: center; color: #fff;
   animation: pulseGlow 1.6s ease-in-out infinite;
-  border: 2px solid var(--neon);
-  padding: 10px;
+  border: 2px solid var(--neon); padding: 8px;
 }
 #splash-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(26px, 8vw, 44px);
+  font-size: clamp(26px, 8vw, 42px);
   font-weight: 900; letter-spacing: 4px;
   animation: textPulse 1.6s ease-in-out infinite;
 }
@@ -164,12 +167,11 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
   color: var(--neon); opacity: 0.8; margin-top: 6px;
 }
 
-/* ─── LOBBY SCREEN ─── */
+/* ─── LOBBY SCREEN (Modern Mobile Scroll) ─── */
 #lobby-screen {
   background: var(--bg);
   justify-content: flex-start;
-  overflow-y: auto;
-  padding: 0 0 28px;
+  overflow-y: auto; padding: 0 0 28px;
   z-index: 90;
 }
 #lobby-screen::-webkit-scrollbar { width: 4px; }
@@ -177,10 +179,10 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
 
 .lobby-header {
   width: 100%; padding: 14px 16px;
-  background: linear-gradient(180deg, rgba(0,245,255,0.1) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(0,245,255,0.12) 0%, transparent 100%);
   border-bottom: 1px solid var(--border);
   text-align: center; position: sticky; top: 0; z-index: 10;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
 }
 .lobby-header h1 {
   font-family: 'Orbitron', sans-serif;
@@ -193,36 +195,34 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
 
 .lobby-body {
   width: 100%; max-width: 480px;
-  padding: 10px 14px;
-  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;
 }
 
 .card {
   background: var(--glass);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 12px 14px;
+  border-radius: 16px; padding: 12px 14px;
 }
 .card-title {
   font-family: 'Orbitron', sans-serif;
   font-size: 10px; letter-spacing: 2px;
-  color: var(--neon); text-transform: uppercase;
-  margin-bottom: 8px;
+  color: var(--neon); text-transform: uppercase; margin-bottom: 8px;
 }
 .toggle-group { display: flex; gap: 8px; flex-wrap: wrap; }
 .toggle-btn {
-  flex: 1; min-width: 60px;
-  padding: 9px 10px; border-radius: 10px;
+  flex: 1; min-width: 60px; min-height: 44px;
+  padding: 8px 10px; border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.15);
   background: rgba(255,255,255,0.04);
   color: rgba(255,255,255,0.65);
   font-size: 12px; font-family: 'Orbitron', sans-serif;
   font-weight: 700; letter-spacing: 1px;
+  display: flex; align-items: center; justify-content: center;
   transition: all 0.2s ease;
 }
 .toggle-btn.active {
   border-color: var(--neon);
-  background: rgba(0,245,255,0.14);
+  background: rgba(0,245,255,0.15);
   color: var(--neon);
   box-shadow: 0 0 12px rgba(0,245,255,0.3);
 }
@@ -236,19 +236,18 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
   width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
 }
 .player-name-input {
-  flex: 1;
-  background: rgba(255,255,255,0.07);
+  flex: 1; min-height: 40px;
+  background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 8px; color: #fff;
-  padding: 6px 10px; font-size: 13px;
-  outline: none; min-width: 0;
+  padding: 6px 10px; font-size: 13px; outline: none; min-width: 0;
 }
 .player-name-input:focus {
   border-color: var(--neon);
   box-shadow: 0 0 8px rgba(0,245,255,0.25);
 }
 .ai-toggle {
-  padding: 6px 10px; border-radius: 8px;
+  min-height: 40px; padding: 6px 12px; border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.15);
   background: rgba(255,255,255,0.04);
   color: rgba(255,255,255,0.55);
@@ -262,10 +261,9 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
   box-shadow: 0 0 8px rgba(119,0,255,0.3);
 }
 
-/* Wallet & Watch Ad button in Lobby */
 #lobby-wallet-card {
   display: flex; align-items: center; justify-content: space-between;
-  background: linear-gradient(135deg, rgba(255,221,0,0.08), rgba(255,170,0,0.04));
+  background: linear-gradient(135deg, rgba(255,221,0,0.09), rgba(255,170,0,0.04));
   border: 1px solid rgba(255,221,0,0.35);
 }
 .wallet-coin-val {
@@ -275,31 +273,29 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
   display: flex; align-items: center; gap: 6px;
 }
 #lobby-watch-ad-btn {
-  width: 100%; padding: 13px;
+  width: 100%; min-height: 48px;
   border-radius: 14px;
   background: linear-gradient(135deg, #ff8c00, #ff0055);
   color: #fff; font-family: 'Orbitron', sans-serif;
-  font-size: 12px; font-weight: 900; letter-spacing: 1.5px;
+  font-size: 13px; font-weight: 900; letter-spacing: 1.5px;
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  animation: adButtonPulse 2s ease-in-out infinite;
   box-shadow: 0 0 20px rgba(255,140,0,0.4);
 }
 #start-btn {
-  width: 100%; padding: 15px;
+  width: 100%; min-height: 52px;
   border-radius: 14px;
   background: linear-gradient(135deg, var(--neon), var(--purple));
   color: #000; font-family: 'Orbitron', sans-serif;
   font-size: 15px; font-weight: 900; letter-spacing: 3px;
   text-transform: uppercase;
-  box-shadow: 0 0 28px rgba(0,245,255,0.4), 0 0 60px rgba(119,0,255,0.25);
-  transition: transform 0.15s;
+  box-shadow: 0 0 28px rgba(0,245,255,0.4);
 }
 #start-btn:active { transform: scale(0.97); }
 
 /* ════════════════════════════════════════════════════
-   THEME BACKGROUNDS & PARTICLES
+   4. THEME BACKGROUNDS & AMBIENT GRAPHICS
 ════════════════════════════════════════════════════ */
-body.theme-cyber   { background: #08090f; }
+body.theme-cyber   { background: #090a12; }
 body.theme-ocean   { background: linear-gradient(180deg, #001326 0%, #002244 50%, #000c1a 100%); }
 body.theme-alien   { background: radial-gradient(circle at 50% 30%, #0d0026 0%, #02000a 60%, #000 100%); }
 body.theme-jungle  { background: linear-gradient(180deg, #091a05 0%, #16360c 50%, #051202 100%); }
@@ -319,20 +315,16 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   position: absolute; pointer-events: none;
   animation: swimFish linear infinite; will-change: transform;
 }
-
-/* Alien Space Station interactive station */
 .alien-ludo-table {
-  position: fixed; bottom: 84px; right: 8px;
+  position: fixed; bottom: 175px; right: 10px;
   background: rgba(13, 0, 38, 0.75);
-  border: 1px solid #00ff88;
-  border-radius: 12px;
+  border: 1px solid #00ff88; border-radius: 12px;
   padding: 6px 10px;
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   box-shadow: 0 0 16px rgba(0,255,136,0.3);
   pointer-events: auto; cursor: pointer; z-index: 15;
   animation: floatGently 6s ease-in-out infinite;
 }
-.alien-ludo-table:active { transform: scale(0.95); }
 .alien-table-title {
   font-family: 'Orbitron', sans-serif;
   font-size: 7px; color: #00ff88; letter-spacing: 1px; font-weight: 700;
@@ -340,7 +332,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 .alien-table-figures { font-size: 16px; animation: alienBob 1.8s ease-in-out infinite; }
 
 /* ════════════════════════════════════════════════════
-   GAME SCREEN (100dvh, ZERO SCROLL, 100vw MAX BOARD)
+   5. VERTICAL PHONE-FIRST GAME SCREEN (100dvh, NO SCROLL)
 ════════════════════════════════════════════════════ */
 #game-screen {
   background: transparent;
@@ -348,25 +340,27 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   justify-content: space-between;
   z-index: 80; height: 100dvh;
   overflow: hidden;
+  padding: 0;
 }
 
-/* TOP BAR */
+/* TOP BAR (Header + Coins + Hamburger) */
 #top-bar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 10px; width: 100%;
+  padding: 6px 12px; width: 100%;
   background: rgba(0,0,0,0.65);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(10px);
   gap: 8px; flex-shrink: 0; z-index: 30;
+  min-height: 44px;
 }
 #hamburger-btn {
-  width: 34px; height: 34px; border-radius: 8px;
+  width: 44px; height: 44px; border-radius: 10px;
   background: var(--glass); border: 1px solid var(--border);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 4px; padding: 0;
 }
 #hamburger-btn span {
-  display: block; width: 16px; height: 2px;
+  display: block; width: 18px; height: 2px;
   background: var(--neon); border-radius: 2px;
 }
 #game-title {
@@ -376,48 +370,31 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   animation: textPulse 3s ease-in-out infinite;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.top-action-cluster {
+  display: flex; align-items: center; gap: 6px;
+}
 #top-coin-display {
   display: flex; align-items: center; gap: 4px;
-  background: rgba(255,221,0,0.08);
+  background: rgba(255,221,0,0.09);
   border: 1px solid rgba(255,221,0,0.35);
-  border-radius: 16px; padding: 4px 9px;
+  border-radius: 16px; padding: 5px 10px;
   font-family: 'Orbitron', sans-serif;
   font-size: 12px; font-weight: 700; color: var(--yellow);
 }
+.store-quick-pill {
+  min-height: 32px; padding: 4px 8px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--purple), var(--neon));
+  color: #000; font-family: 'Orbitron', sans-serif;
+  font-size: 10px; font-weight: 900; letter-spacing: 0.5px;
+}
 
-/* STATUS BAR (Active player indicator) */
-#status-bar {
-  display: flex; align-items: center; justify-content: center;
-  padding: 4px 6px; gap: 6px; width: 100%;
-  background: rgba(0,0,0,0.45);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  flex-shrink: 0; z-index: 25;
-}
-.player-chip {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 4px 8px; border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.03);
-  min-width: 68px; flex: 1; max-width: 90px;
-  transition: all 0.3s ease;
-}
-.player-chip.active {
-  border-width: 2px; transform: scale(1.05);
-  animation: glowBorderPulse 1.4s ease-in-out infinite;
-}
-.chip-name {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
-}
-.chip-status { font-size: 9px; color: rgba(255,255,255,0.7); margin-top: 1px; }
-
-/* MAIN ARENA (Fills 100% of remaining space, perfectly centered) */
+/* MAIN ARENA (Massive Square Board, 8-10px padding from screen edge) */
 #main-arena {
   flex: 1;
   display: flex; align-items: center; justify-content: center;
   width: 100vw; max-width: 100vw;
   overflow: hidden; position: relative;
-  padding: 2px;
+  padding: 4px;
 }
 #board-container {
   position: relative;
@@ -432,7 +409,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   grid-template-rows: repeat(15, 1fr);
   width: 100%; height: 100%;
   border: 2px solid var(--neon);
-  border-radius: 6px; overflow: hidden;
+  border-radius: 8px; overflow: hidden;
   box-shadow: 0 0 35px rgba(0,245,255,0.35);
   background: #0d0f17;
 }
@@ -445,15 +422,19 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 .ludo-cell.safe-cell::after {
   content: '⭐'; font-size: 9px; pointer-events: none; opacity: 0.95;
 }
+.ludo-cell.start-p1 { background: rgba(0,255,136,0.35) !important; border: 1px solid #00ff88; }
+.ludo-cell.start-p2 { background: rgba(255,51,102,0.35) !important; border: 1px solid #ff3366; }
+.ludo-cell.start-p3 { background: rgba(255,221,0,0.35) !important; border: 1px solid #ffdd00; }
+.ludo-cell.start-p4 { background: rgba(0,245,255,0.35) !important; border: 1px solid #00f5ff; }
 .ludo-cell.center-cell { font-size: 20px; }
-.ludo-cell.yard-p1 { background: rgba(0,255,136,0.25); }
-.ludo-cell.yard-p2 { background: rgba(255,51,102,0.25); }
-.ludo-cell.yard-p3 { background: rgba(255,221,0,0.25); }
-.ludo-cell.yard-p4 { background: rgba(0,245,255,0.25); }
-.ludo-cell.home-p1 { background: rgba(0,255,136,0.3); }
-.ludo-cell.home-p2 { background: rgba(255,51,102,0.3); }
-.ludo-cell.home-p3 { background: rgba(255,221,0,0.3); }
-.ludo-cell.home-p4 { background: rgba(0,245,255,0.3); }
+.ludo-cell.yard-p1 { background: rgba(0,255,136,0.22); }
+.ludo-cell.yard-p2 { background: rgba(255,51,102,0.22); }
+.ludo-cell.yard-p3 { background: rgba(255,221,0,0.22); }
+.ludo-cell.yard-p4 { background: rgba(0,245,255,0.22); }
+.ludo-cell.home-p1 { background: rgba(0,255,136,0.28); }
+.ludo-cell.home-p2 { background: rgba(255,51,102,0.28); }
+.ludo-cell.home-p3 { background: rgba(255,221,0,0.28); }
+.ludo-cell.home-p4 { background: rgba(0,245,255,0.28); }
 .ludo-cell.path-cell { background: rgba(255,255,255,0.04); }
 
 /* TOKENS */
@@ -475,40 +456,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   transform: scale(1.25);
   border-color: #ffff00;
 }
-.token.hopping { animation: tokenHop 0.3s ease; }
-
-/* ════════════════════════════════════════════════════
-   DYNAMIC PHYSICALLY REPOSITIONING DICE
-════════════════════════════════════════════════════ */
-#dynamic-dice {
-  position: absolute;
-  width: 54px; height: 54px;
-  border-radius: 14px;
-  background: linear-gradient(145deg, #161824, #0b0d14);
-  border: 2.5px solid var(--dice-color);
-  box-shadow: 0 0 20px var(--dice-color);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  padding: 8px; gap: 3px;
-  cursor: pointer; z-index: 60;
-  transform: translate(-50%, -50%);
-  transition: top 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-              left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-              border-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s;
-}
-#dynamic-dice:active { transform: translate(-50%, -50%) scale(0.92); }
-#dynamic-dice.rolling { animation: diceSpinAnim 0.12s ease infinite; pointer-events: none; }
-#dynamic-dice.premium-skin { animation: dicePremiumGlow 1.2s ease-in-out infinite; }
-#dynamic-dice.disabled { opacity: 0.5; pointer-events: none; }
-
-.pip {
-  border-radius: 50%;
-  background: var(--dice-color);
-  box-shadow: 0 0 6px var(--dice-color);
-  transition: opacity 0.05s;
-}
-.pip.hidden { background: transparent; box-shadow: none; }
+.token.hopping { animation: tokenHopAnim 0.3s ease; }
 
 /* SNL BOARD (10x10 Grid with thick cartoon SVG snakes) */
 #snl-board { width: 100%; height: 100%; position: relative; }
@@ -518,7 +466,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   grid-template-rows: repeat(10, 1fr);
   width: 100%; height: 100%;
   border: 2px solid var(--neon);
-  border-radius: 6px; overflow: hidden;
+  border-radius: 8px; overflow: hidden;
   box-shadow: 0 0 35px rgba(0,245,255,0.35);
   background: #0d0f17;
 }
@@ -540,101 +488,183 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 
 /* ════════════════════════════════════════════════════
-   CONTINUOUS IN-MATCH AD POWER-UPS BAR
+   6. UNDER-BOARD STATUS CARDS (TURN INDICATOR)
 ════════════════════════════════════════════════════ */
-#ad-powerup-bar {
-  display: flex; align-items: center; justify-content: space-between;
+#underboard-status-row {
+  display: flex; align-items: center; justify-content: center;
   padding: 4px 8px; gap: 6px; width: 100%;
-  background: rgba(0,0,0,0.65);
-  border-top: 1px solid rgba(255,140,0,0.3);
+  background: rgba(0,0,0,0.5);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   flex-shrink: 0; z-index: 25;
 }
+.player-turn-card {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 4px 6px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03);
+  min-width: 68px; flex: 1; max-width: 90px;
+  transition: all 0.25s ease;
+}
+.player-turn-card.active {
+  border-width: 2px; transform: scale(1.05);
+  animation: glowBorderPulse 1.4s ease-in-out infinite;
+  background: rgba(255,255,255,0.08);
+}
+.card-pname {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.card-pstatus {
+  font-size: 8.5px; color: rgba(255,255,255,0.7); margin-top: 1px;
+}
+
+/* ════════════════════════════════════════════════════
+   7. ACTIVE CONTROLS DOCK (MOBILE THUMB-REACHABLE)
+════════════════════════════════════════════════════ */
+#active-controls-dock {
+  display: flex; flex-direction: column;
+  padding: 6px 10px 8px; gap: 6px; width: 100%;
+  background: rgba(0,0,0,0.85);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  flex-shrink: 0; z-index: 30;
+}
+
+/* Row 1: Quick Ad Power-ups (min-height 44px for thumbs) */
+#ad-powerups-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 6px; width: 100%;
+}
 .ad-powerup-btn {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px;
-  padding: 5px 4px; border-radius: 10px;
-  border: 1px solid rgba(255,140,0,0.45);
-  background: linear-gradient(180deg, rgba(255,140,0,0.15) 0%, rgba(255,60,0,0.08) 100%);
-  font-size: 8px; color: #fff;
-  font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spacing: 0.5px;
-  transition: transform 0.15s, border-color 0.2s;
-  cursor: pointer;
+  flex: 1; min-height: 44px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 4px 6px; border-radius: 10px;
+  border: 1px solid rgba(255,140,0,0.5);
+  background: linear-gradient(180deg, rgba(255,140,0,0.18) 0%, rgba(255,60,0,0.09) 100%);
+  color: #fff; font-family: 'Orbitron', sans-serif;
+  font-size: 8px; font-weight: 700; letter-spacing: 0.5px;
+  cursor: pointer; transition: transform 0.15s, border-color 0.2s;
 }
 .ad-powerup-btn:active { transform: scale(0.94); }
 .ad-powerup-btn.used {
-  opacity: 0.5; border-color: rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.05);
+  opacity: 0.45; border-color: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.04);
 }
-.ad-powerup-icon { font-size: 15px; }
-.ad-tag { font-size: 6.5px; color: var(--yellow); letter-spacing: 0.5px; }
+.ad-powerup-btn .icon { font-size: 15px; }
+.ad-powerup-btn .tag { font-size: 6.5px; color: var(--yellow); }
 
-/* ════════════════════════════════════════════════════
-   BOTTOM DOCK (Rage Meter + Turn Cue + Last Roll)
-════════════════════════════════════════════════════ */
-#bottom-dock {
+/* Row 2: Rage Bar (Left) + Big Dice Station (Center) + Last Roll (Right) */
+#dock-main-row {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 10px; gap: 8px; width: 100%;
-  background: rgba(0,0,0,0.75);
-  border-top: 1px solid var(--border);
-  backdrop-filter: blur(10px);
-  flex-shrink: 0; z-index: 25;
+  gap: 8px; width: 100%;
 }
-#rage-section {
-  flex: 1; display: flex; flex-direction: column; gap: 2px;
+
+/* Left: Rage Section */
+#rage-dock-col {
+  flex: 1; display: flex; flex-direction: column; gap: 3px;
+  min-width: 80px;
 }
 .rage-header-row {
   display: flex; align-items: center; justify-content: space-between;
 }
 #rage-label {
-  font-size: 8px; letter-spacing: 1.5px;
-  color: rgba(255,255,255,0.6); font-family: 'Orbitron', sans-serif; text-transform: uppercase;
+  font-size: 8px; letter-spacing: 1px; color: rgba(255,255,255,0.6);
+  font-family: 'Orbitron', sans-serif; text-transform: uppercase;
 }
 #rage-pct {
   font-size: 8.5px; color: var(--red);
   font-family: 'Orbitron', sans-serif; font-weight: 700;
 }
 #rage-bar-bg {
-  height: 7px; background: rgba(255,255,255,0.1);
+  height: 8px; background: rgba(255,255,255,0.12);
   border-radius: 4px; overflow: hidden;
-  border: 1px solid rgba(255,51,102,0.25);
+  border: 1px solid rgba(255,51,102,0.3);
 }
 #rage-bar-fill {
   height: 100%; border-radius: 4px;
   background: linear-gradient(90deg, var(--orange), var(--red));
-  transition: width 0.4s ease;
+  transition: width 0.35s ease;
   box-shadow: 0 0 8px var(--red);
 }
 #stampede-btn {
-  display: none; padding: 3px 6px; border-radius: 6px;
+  display: none; min-height: 28px; padding: 4px 6px; border-radius: 6px;
   background: linear-gradient(135deg, var(--red), var(--orange));
-  color: #fff; font-size: 8px; font-weight: 900; letter-spacing: 1px;
+  color: #fff; font-size: 8px; font-weight: 900; letter-spacing: 0.5px;
   animation: rageFlashBar 0.8s infinite;
-  margin-top: 2px;
 }
 #stampede-btn.visible { display: block; }
 
-#turn-banner-center {
-  flex: 1.2; text-align: center;
-  font-family: 'Orbitron', sans-serif; font-size: 9px;
-  font-weight: 700; letter-spacing: 1px;
-  color: var(--dice-color); text-shadow: 0 0 8px var(--dice-color);
+/* Center: BIG DYNAMIC DICE STATION (Thumb-Interactive, Exact Player Color) */
+#dice-station-center {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+#dynamic-dice {
+  width: 64px; height: 64px; min-width: 64px; min-height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #181b2a, #0d0f17);
+  border: 3px solid var(--dice-color);
+  box-shadow: 0 0 20px var(--dice-color);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 8px; gap: 3px;
+  cursor: pointer; position: relative;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s;
+  animation: diceBreathAnim 2s ease-in-out infinite;
+}
+#dynamic-dice:active { transform: scale(0.92); }
+#dynamic-dice.rolling {
+  animation: diceWobble 0.1s ease infinite !important;
+  pointer-events: none;
+}
+#dynamic-dice.premium-skin {
+  animation: dicePremiumGlow 1.2s ease-in-out infinite !important;
 }
 
-#lastroll-dock-section {
-  display: flex; flex-direction: column; align-items: center;
-  min-width: 44px;
+/* 9 PIPS: CSS Variable Driven to prevent specificity lock */
+.pip {
+  border-radius: 50%;
+  background: var(--dice-color, #00ff88);
+  box-shadow: 0 0 6px var(--dice-color, #00ff88);
+  width: 100%; height: 100%;
+  transition: opacity 0.05s ease;
+}
+.pip.hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  box-shadow: none !important;
+}
+
+#dice-turn-caption {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 8.5px; font-weight: 800; letter-spacing: 0.5px;
+  color: var(--dice-color); text-shadow: 0 0 8px var(--dice-color);
+  text-align: center;
+}
+
+/* Right: Last Roll Section */
+#lastroll-dock-col {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: flex-end; justify-content: center;
+  min-width: 70px;
+}
+.lastroll-label {
+  font-size: 7.5px; color: rgba(255,255,255,0.5);
+  font-family: 'Orbitron', sans-serif; letter-spacing: 0.5px;
 }
 #last-roll-num {
-  font-size: 18px; font-weight: 900;
+  font-size: 22px; font-weight: 900;
   color: var(--dice-color); font-family: 'Orbitron', sans-serif;
-  text-shadow: 0 0 8px var(--dice-color);
+  text-shadow: 0 0 10px var(--dice-color);
 }
 
 /* ════════════════════════════════════════════════════
-   THEME STORE MODAL
+   8. THEME STORE MODAL
 ════════════════════════════════════════════════════ */
 #theme-store {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.94);
+  background: rgba(0,0,0,0.95);
   z-index: 600; display: flex; flex-direction: column;
   transform: translateY(100%); opacity: 0;
   transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s;
@@ -650,10 +680,10 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 #close-store {
   background: none; color: rgba(255,255,255,0.7);
-  font-size: 24px; padding: 4px;
+  font-size: 24px; min-width: 44px; min-height: 44px;
 }
 #store-coin-banner {
-  text-align: center; padding: 8px;
+  text-align: center; padding: 9px;
   font-family: 'Orbitron', sans-serif; font-size: 13px; color: var(--yellow);
   background: rgba(255,221,0,0.08); border-bottom: 1px solid rgba(255,221,0,0.2);
 }
@@ -691,7 +721,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 .badge-owned { background: var(--purple); color: #fff; }
 .badge-active { background: var(--neon); color: #000; }
 .store-btn {
-  width: 100%; padding: 6px; border-radius: 8px;
+  width: 100%; min-height: 38px; border-radius: 8px;
   font-size: 10px; font-weight: 900; font-family: 'Orbitron', sans-serif;
   letter-spacing: 1px;
 }
@@ -703,7 +733,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 
 /* ════════════════════════════════════════════════════
-   AD OVERLAY & REWARD MODAL
+   9. AD LOADING & REWARD MODAL
 ════════════════════════════════════════════════════ */
 #ad-loading {
   position: fixed; inset: 0;
@@ -733,7 +763,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 
 /* ════════════════════════════════════════════════════
-   SIDE MENU & RULES & WIN SCREEN
+   10. SIDE MENU & RULES & WIN SCREEN
 ════════════════════════════════════════════════════ */
 #side-menu { position: fixed; inset: 0; z-index: 200; pointer-events: none; }
 #side-menu.open { pointer-events: auto; }
@@ -757,7 +787,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 .menu-item {
   display: flex; align-items: center; gap: 12px;
-  padding: 14px 18px; color: rgba(255,255,255,0.85); font-size: 13px;
+  min-height: 48px; padding: 12px 18px; color: rgba(255,255,255,0.85); font-size: 13px;
   border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer;
 }
 .menu-item:hover { background: rgba(0,245,255,0.08); color: var(--neon); }
@@ -782,7 +812,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 #rules-content ul { padding-left: 18px; }
 #close-rules {
-  margin-top: 14px; width: 100%; padding: 10px; border-radius: 10px;
+  margin-top: 14px; width: 100%; min-height: 44px; border-radius: 10px;
   background: linear-gradient(135deg, var(--neon), var(--purple));
   color: #000; font-weight: 800; font-family: 'Orbitron', sans-serif;
 }
@@ -803,7 +833,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   font-size: 13px; color: var(--yellow); font-family: 'Orbitron', sans-serif;
 }
 #play-again-btn {
-  padding: 13px 30px; border-radius: 14px;
+  min-height: 48px; padding: 12px 30px; border-radius: 14px;
   background: linear-gradient(135deg, var(--neon), var(--purple));
   color: #000; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px;
 }
@@ -814,11 +844,11 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 
 /* ════════════════════════════════════════════════════
-   EASTER EGG SLITHERING SNAKE
+   11. EASTER EGG & TOAST
 ════════════════════════════════════════════════════ */
 #easter-snake {
   position: fixed; pointer-events: none; z-index: 50;
-  bottom: 85px; font-size: 38px; display: none;
+  bottom: 120px; font-size: 38px; display: none;
   filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));
 }
 .easter-bubble {
@@ -828,17 +858,14 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   color: #fff; font-family: 'Orbitron', sans-serif; white-space: nowrap;
 }
 
-/* ════════════════════════════════════════════════════
-   TOAST & SPARKLE
-════════════════════════════════════════════════════ */
 .sparkle {
   position: absolute; pointer-events: none; font-size: 14px;
-  z-index: 45; animation: sparkleOut 0.5s ease forwards;
+  z-index: 45; animation: sparkleAnim 0.5s ease forwards;
 }
 #toast {
-  position: fixed; bottom: 105px; left: 50%; transform: translateX(-50%);
+  position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
   background: rgba(10,12,20,0.92); border: 1px solid var(--neon);
-  border-radius: 20px; padding: 7px 18px; font-size: 12px; font-weight: 600;
+  border-radius: 20px; padding: 8px 18px; font-size: 12px; font-weight: 600;
   color: #fff; z-index: 500; opacity: 0; transition: opacity 0.3s;
   pointer-events: none; white-space: nowrap; max-width: 92vw; text-align: center;
   box-shadow: 0 0 15px rgba(0,245,255,0.3);
@@ -875,7 +902,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   </div>
   <div class="lobby-body">
 
-    <!-- Wallet & Quick Watch Ad -->
+    <!-- Wallet Card -->
     <div class="card" id="lobby-wallet-card">
       <div>
         <div class="card-title" style="margin:0">🪙 Coins Balance</div>
@@ -942,82 +969,94 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   </div>
 </div>
 
-<!-- ░░░ 3. GAME SCREEN ░░░ -->
+<!-- ░░░ 3. VERTICAL PORTRAIT GAME SCREEN ░░░ -->
 <div class="screen hidden" id="game-screen">
 
-  <!-- Top Bar -->
+  <!-- 1. Top Bar -->
   <div id="top-bar">
     <button id="hamburger-btn" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
     <div id="game-title">LUDO WARS</div>
-    <div id="top-coin-display">🪙 <span id="total-coins">0</span></div>
+    <div class="top-action-cluster">
+      <div id="top-coin-display">🪙 <span id="total-coins">0</span></div>
+      <button class="store-quick-pill" onclick="openThemeStore()">🛍️ STORE</button>
+    </div>
   </div>
 
-  <!-- 4-Player Status Bar -->
-  <div id="status-bar"></div>
-
-  <!-- Main Arena (Centered, 100vw Max Square Board) -->
+  <!-- 2. Main Game Arena (Massive Centered Square Board) -->
   <div id="main-arena">
     <div id="board-container">
-      <!-- Ludo Board -->
+      <!-- Ludo Board (15x15) -->
       <div id="ludo-board" style="display:none"></div>
-      <!-- Snakes & Ladders Board -->
+      <!-- Snakes & Ladders Board (10x10) -->
       <div id="snl-board" style="display:none">
         <div id="snl-grid"></div>
         <svg id="snl-svg-overlay" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
       </div>
-
-      <!-- DYNAMIC PHYSICALLY REPOSITIONING DICE -->
-      <div id="dynamic-dice" onclick="handleDiceClick()" role="button" aria-label="Roll Dice">
-        <div class="pip hidden" id="dp1"></div>
-        <div class="pip hidden" id="dp2"></div>
-        <div class="pip hidden" id="dp3"></div>
-        <div class="pip hidden" id="dp4"></div>
-        <div class="pip hidden" id="dp5"></div>
-        <div class="pip hidden" id="dp6"></div>
-        <div class="pip hidden" id="dp7"></div>
-        <div class="pip hidden" id="dp8"></div>
-        <div class="pip hidden" id="dp9"></div>
-      </div>
     </div>
   </div>
 
-  <!-- Continuous In-Match Ad Power-ups Bar -->
-  <div id="ad-powerup-bar">
-    <button class="ad-powerup-btn" id="ad-loaded-dice-btn" onclick="watchAdLoadedDice()">
-      <span class="ad-powerup-icon">🎯</span>
-      <span>LOADED DICE</span>
-      <span class="ad-tag">📺 Guaranteed 6</span>
-    </button>
-    <button class="ad-powerup-btn" id="ad-rage-boost-btn" onclick="watchAdRageBoost()">
-      <span class="ad-powerup-icon">⚡</span>
-      <span>RAGE BOOST</span>
-      <span class="ad-tag">📺 100% Rage</span>
-    </button>
-    <button class="ad-powerup-btn" id="ad-premium-dice-btn" onclick="watchAdPremiumDice()">
-      <span class="ad-powerup-icon">✨</span>
-      <span>PREMIUM DICE</span>
-      <span class="ad-tag">📺 Neon Skin</span>
-    </button>
-  </div>
+  <!-- 3. Under-Board Player Status Cards (Turn Indicator) -->
+  <div id="underboard-status-row"></div>
 
-  <!-- Bottom Dock -->
-  <div id="bottom-dock">
-    <div id="rage-section">
-      <div class="rage-header-row">
-        <div id="rage-label">⚡ Rage Meter</div>
-        <div id="rage-pct">0%</div>
-      </div>
-      <div id="rage-bar-bg"><div id="rage-bar-fill" style="width:0%"></div></div>
-      <button id="stampede-btn" onclick="triggerStampede()">💥 STAMPEDE! (+12)</button>
+  <!-- 4. Active Controls Dock (Thumb-Reachable at Bottom) -->
+  <div id="active-controls-dock">
+
+    <!-- Row 1: Continuous In-Match Ad Power-ups -->
+    <div id="ad-powerups-row">
+      <button class="ad-powerup-btn" id="ad-loaded-dice-btn" onclick="watchAdLoadedDice()">
+        <span class="icon">🎯</span>
+        <span>LOADED DICE</span>
+        <span class="tag">📺 Roll a 6</span>
+      </button>
+      <button class="ad-powerup-btn" id="ad-rage-boost-btn" onclick="watchAdRageBoost()">
+        <span class="icon">⚡</span>
+        <span>RAGE BOOST</span>
+        <span class="tag">📺 100% Rage</span>
+      </button>
+      <button class="ad-powerup-btn" id="ad-premium-dice-btn" onclick="watchAdPremiumDice()">
+        <span class="icon">✨</span>
+        <span>PREMIUM DICE</span>
+        <span class="tag">📺 Neon Skin</span>
+      </button>
     </div>
 
-    <div id="turn-banner-center">TAP DICE TO ROLL</div>
+    <!-- Row 2: Rage Bar (Left) + Big Dice Station (Center) + Last Roll (Right) -->
+    <div id="dock-main-row">
 
-    <div id="lastroll-dock-section">
-      <div style="font-size:7.5px;color:rgba(255,255,255,0.45);font-family:'Orbitron',sans-serif">LAST ROLL</div>
-      <div id="last-roll-num">-</div>
+      <!-- Left: Rage Meter -->
+      <div id="rage-dock-col">
+        <div class="rage-header-row">
+          <div id="rage-label">⚡ Rage</div>
+          <div id="rage-pct">0%</div>
+        </div>
+        <div id="rage-bar-bg"><div id="rage-bar-fill" style="width:0%"></div></div>
+        <button id="stampede-btn" onclick="triggerStampede()">💥 STAMPEDE! (+12)</button>
+      </div>
+
+      <!-- Center: BIG INTERACTIVE DICE STATION -->
+      <div id="dice-station-center">
+        <div id="dynamic-dice" onclick="handleDiceClick()" role="button" aria-label="Roll Dice">
+          <div class="pip hidden" id="dp1"></div>
+          <div class="pip hidden" id="dp2"></div>
+          <div class="pip hidden" id="dp3"></div>
+          <div class="pip hidden" id="dp4"></div>
+          <div class="pip hidden" id="dp5"></div>
+          <div class="pip hidden" id="dp6"></div>
+          <div class="pip hidden" id="dp7"></div>
+          <div class="pip hidden" id="dp8"></div>
+          <div class="pip hidden" id="dp9"></div>
+        </div>
+        <div id="dice-turn-caption">TAP TO ROLL</div>
+      </div>
+
+      <!-- Right: Last Roll Display -->
+      <div id="lastroll-dock-col">
+        <div class="lastroll-label">LAST ROLL</div>
+        <div id="last-roll-num">-</div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1061,7 +1100,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
     <ul>
       <li>Roll a <strong>6</strong> to unlock a token from the yard.</li>
       <li><strong>Token Spawn:</strong> Unlocked tokens spawn on your own base's start tile!</li>
-      <li><strong>Dynamic Dice:</strong> The dice moves right to the active player's base and glows in their color.</li>
+      <li><strong>Dynamic Dice:</strong> Turns the exact color of the current player.</li>
       <li>Landing on an opponent's token sends it home and grants an <strong>extra roll</strong>!</li>
       <li>⭐ Star cells are safe zones (no cutting).</li>
       <li>Need an exact count to reach the center crown (👑). First with all 4 tokens home wins!</li>
@@ -1098,12 +1137,12 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 <div id="toast"></div>
 
 <!-- ════════════════════════════════════════════════════
-     CORE GAME LOGIC & ENGINE JAVASCRIPT
+     CORE GAME LOGIC & JAVASCRIPT ENGINE
 ════════════════════════════════════════════════════ -->
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   LUDO WARS – Ultimate Premium Edition v3.0
-   by AetherByte Studios
+   LUDO WARS – Ultimate Premium Edition v3.5
+   Mobile Portrait-First Game Engine by AetherByte Studios
 ═══════════════════════════════════════════════════════════════ */
 
 // ── 1. EXACT LUDO 15x15 GEOMETRY & PATH DEFINITIONS ───────────
@@ -1162,14 +1201,6 @@ const HOME_CLASSES = ['home-p1','home-p2','home-p3','home-p4'];
 const P_COLORS = ['#00ff88','#ff3366','#ffdd00','#00f5ff'];
 const P_NAMES_DEFAULT = ['Player 1','Player 2','Player 3','Player 4'];
 
-// Dynamic Dice target positions (% inside #board-container) near each active base
-const DICE_DOCK_POSITIONS = [
-  { top: '18%', left: '18%' }, // P1 Green: Top-Left Base Center
-  { top: '82%', left: '18%' }, // P2 Red: Bottom-Left Base Center
-  { top: '18%', left: '82%' }, // P3 Yellow: Top-Right Base Center
-  { top: '82%', left: '82%' }, // P4 Cyan: Bottom-Right Base Center
-];
-
 // ── 2. SNAKES & LADDERS DEFINITIONS ───────────────────────────
 const SNL_SNAKES  = { 16:6, 47:26, 49:11, 56:53, 62:19, 64:60, 87:24, 93:73, 95:75, 99:78 };
 const SNL_LADDERS = { 4:14, 9:31, 20:38, 28:84, 40:59, 51:67, 63:81, 71:91 };
@@ -1210,11 +1241,8 @@ let GS = {
   selectableTokens: [],
   animating: false,
   extraTurn: false,
-  loadedDice: false,         // Guarantee 6 on next roll
+  loadedDice: false,         // Force next roll to be a 6
   premiumSkin: false,        // Special holographic animated dice
-  adDiceUsed: false,
-  adRageUsed: false,
-  adSkinUsed: false,
 };
 
 let lobbySettings = {
@@ -1224,7 +1252,7 @@ let lobbySettings = {
   playerData: [],
 };
 
-// 9-Pip Dice Display Patterns
+// 9-Pip Dice Display Patterns (3x3 grid)
 const PIP_PATTERNS = {
   1: [0,0,0, 0,1,0, 0,0,0],
   2: [0,0,1, 0,0,0, 1,0,0],
@@ -1386,17 +1414,17 @@ async function watchAdLobby() {
   btn.disabled = false;
 }
 
-// 2. In-Match: Loaded Dice (Guaranteed 6 on next roll)
+// 2. In-Match: Loaded Dice (Force next roll as a 6)
 async function watchAdLoadedDice() {
   if (GS.animating) return;
   const btn = document.getElementById('ad-loaded-dice-btn');
   await showAd('🎯 Loaded Dice Active! Next roll is 6!');
   GS.loadedDice = true;
   btn.classList.add('used');
-  showToast('🎯 Loaded Dice Armed! Your next roll is 6!');
+  showToast('🎯 Loaded Dice armed! Next roll is guaranteed 6!');
 }
 
-// 3. In-Match: Rage Boost (Instantly fill Rage Meter to 100%)
+// 3. In-Match: Rage Boost (Instant 100% Rage Meter)
 async function watchAdRageBoost() {
   if (GS.animating) return;
   const btn = document.getElementById('ad-rage-boost-btn');
@@ -1517,7 +1545,7 @@ function applyThemeById(themeId) {
   document.documentElement.style.setProperty('--neon', theme.boardGlow);
 
   clearBgLayers();
-  if (themeId === 'ocean')   buildOceanTheme();
+  if (themeId === 'ocean')        buildOceanTheme();
   else if (themeId === 'alien')   buildAlienStationTheme();
   else if (themeId === 'jungle')  buildJungleTheme();
   else if (themeId === 'volcano') buildVolcanoTheme();
@@ -1565,12 +1593,12 @@ function buildOceanTheme() {
   }
 }
 
-// THEME 3: Crucial Alien Space Station with Floating Astronauts & Aliens Playing Ludo
+// Crucial Alien Space Station with Floating Astronauts & Aliens Playing Ludo
 function buildAlienStationTheme() {
   const bg = document.getElementById('bg-layer');
   const alienLayer = document.getElementById('alien-interactive-layer');
 
-  // Stars
+  // Twinkling Starfield
   for (let i = 0; i < 45; i++) {
     const star = document.createElement('div');
     star.style.cssText = `position:fixed;width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;background:#fff;border-radius:50%;top:${Math.random()*100}%;left:${Math.random()*100}%;opacity:${0.2+Math.random()*0.7};pointer-events:none;`;
@@ -1583,7 +1611,7 @@ function buildAlienStationTheme() {
     const el = document.createElement('div');
     el.className = 'floating-bg-item';
     el.textContent = cosmos[Math.floor(Math.random() * cosmos.length)];
-    const top = 5 + Math.random() * 80;
+    const top = 5 + Math.random() * 75;
     const left = Math.random() * 88;
     const size = 20 + Math.random() * 16;
     const dur = 5 + Math.random() * 6;
@@ -1592,7 +1620,7 @@ function buildAlienStationTheme() {
     alienLayer.appendChild(el);
   }
 
-  // Interactive Table: Aliens playing Ludo
+  // Interactive Station: Aliens playing Ludo
   const table = document.createElement('div');
   table.className = 'alien-ludo-table';
   table.innerHTML = `
@@ -1674,18 +1702,19 @@ function startGame() {
   renderAllTokens();
   updateCoinDisplay();
   updateRageMeter();
-  updateDynamicDicePositionAndColor();
+  updateDiceColorAndTurnUI();
   setDicePips(1);
 
   if (GS.players[0].isAI) scheduleAITurn();
 }
 
-// ── BOARD SIZING (Max 100vw, Perfect Square, Centered) ────────
+// ── PHONE-FIRST BOARD SIZING (Max 100vw, 8-10px Outer Margin) ──
 function sizeBoard() {
   const arena = document.getElementById('main-arena');
   const bc    = document.getElementById('board-container');
-  const availW = arena.clientWidth - 4;
-  const availH = arena.clientHeight - 4;
+  // Leave 8px margin on each side to prevent touch edge conflicts & zooming
+  const availW = arena.clientWidth - 16;
+  const availH = arena.clientHeight - 8;
   const size = Math.floor(Math.min(availW, availH));
   bc.style.width  = size + 'px';
   bc.style.height = size + 'px';
@@ -1694,44 +1723,38 @@ window.addEventListener('resize', () => {
   if (!document.getElementById('game-screen').classList.contains('hidden')) {
     sizeBoard();
     renderAllTokens();
-    updateDynamicDicePositionAndColor();
     if (GS.mode === 'snl') drawSNLOverlay();
   }
 });
 
 // ═══════════════════════════════════════════════════════════════
-//  DYNAMIC DICE REPOSITIONING & COLOR MAPPING
+//  DICE COLOR & TURN UI DOCK FIX
 // ═══════════════════════════════════════════════════════════════
-function updateDynamicDicePositionAndColor() {
-  const dice = document.getElementById('dynamic-dice');
+function updateDiceColorAndTurnUI() {
   const cp = GS.players[GS.currentPlayerIndex];
   if (!cp) return;
 
-  // Set dynamic color
   const color = cp.color;
   document.documentElement.style.setProperty('--dice-color', color);
-  dice.style.borderColor = color;
-  dice.style.boxShadow = `0 0 22px ${color}`;
 
+  // Update dynamic dice element CSS variable
+  const dice = document.getElementById('dynamic-dice');
+  dice.style.setProperty('--dice-color', color);
+  dice.style.borderColor = color;
+  dice.style.boxShadow = `0 0 20px ${color}`;
+
+  // Update pips color
   document.querySelectorAll('#dynamic-dice .pip').forEach(p => {
-    p.style.background = color;
-    p.style.boxShadow = `0 0 6px ${color}`;
+    p.style.setProperty('--dice-color', color);
   });
 
-  document.getElementById('last-roll-num').style.color = color;
-  document.getElementById('turn-banner-center').textContent = `${cp.name}'s Turn (TAP DICE)`;
-  document.getElementById('turn-banner-center').style.color = color;
+  // Update caption
+  const caption = document.getElementById('dice-turn-caption');
+  caption.textContent = cp.isAI ? `🤖 ${cp.name}'s Turn` : `TAP TO ROLL (${cp.name})`;
+  caption.style.color = color;
 
-  // Physical repositioning
-  if (GS.mode === 'ludo') {
-    const pos = DICE_DOCK_POSITIONS[GS.currentPlayerIndex] || { top: '50%', left: '50%' };
-    dice.style.top  = pos.top;
-    dice.style.left = pos.left;
-  } else {
-    // Snakes & Ladders: Center of board
-    dice.style.top  = '50%';
-    dice.style.left = '50%';
-  }
+  // Update Under-Board cards
+  renderStatusBar();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1772,6 +1795,12 @@ function buildLudoBoard() {
   SHARED_PATH.forEach(([r, c]) => {
     if (!grid[r][c].className.includes('yard')) grid[r][c].classList.add('path-cell');
   });
+
+  // Highlight exact starting tiles with player color classes
+  grid[6][1].classList.add('start-p1');   // P1 Green
+  grid[13][6].classList.add('start-p2');  // P2 Red
+  grid[1][8].classList.add('start-p3');   // P3 Yellow
+  grid[8][13].classList.add('start-p4');  // P4 Cyan
 
   // Star Safe Cells
   SAFE_INDICES.forEach(idx => {
@@ -1826,10 +1855,10 @@ function snlTileToGridPos(tile) {
 
 // Kid-Friendly Premium Cartoon Snakes Palette
 const CARTOON_SNAKE_SKINS = [
-  { body: '#00e676', outline: '#00a152', spots: '#ffeb3b', eyes: '#fff', pupils: '#222' }, // Happy Green
-  { body: '#ff4081', outline: '#c51162', spots: '#ffffff', eyes: '#fff', pupils: '#222' }, // Cheerful Pink
-  { body: '#7c4dff', outline: '#512da8', spots: '#69f0ae', eyes: '#fff', pupils: '#222' }, // Playful Purple
-  { body: '#ff9100', outline: '#e65100', spots: '#ffff00', eyes: '#fff', pupils: '#222' }, // Sunny Orange
+  { body: '#00e676', outline: '#00a152', spots: '#ffeb3b', eyes: '#fff', pupils: '#222' },
+  { body: '#ff4081', outline: '#c51162', spots: '#ffffff', eyes: '#fff', pupils: '#222' },
+  { body: '#7c4dff', outline: '#512da8', spots: '#69f0ae', eyes: '#fff', pupils: '#222' },
+  { body: '#ff9100', outline: '#e65100', spots: '#ffff00', eyes: '#fff', pupils: '#222' },
 ];
 
 function drawSNLOverlay() {
@@ -1962,14 +1991,22 @@ function drawSNLOverlay() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  DICE ROLLING & HANDLING
+//  CRITICAL FIX: RELIABLE RAPID DICE ROLL & FREEZE ENGINE
 // ═══════════════════════════════════════════════════════════════
 function setDicePips(val) {
   const pattern = PIP_PATTERNS[val] || PIP_PATTERNS[1];
   for (let i = 1; i <= 9; i++) {
     const pip = document.getElementById('dp' + i);
-    if (pattern[i - 1]) pip.classList.remove('hidden');
-    else pip.classList.add('hidden');
+    if (!pip) continue;
+    if (pattern[i - 1] === 1) {
+      pip.classList.remove('hidden');
+      pip.style.opacity = '1';
+      pip.style.visibility = 'visible';
+    } else {
+      pip.classList.add('hidden');
+      pip.style.opacity = '0';
+      pip.style.visibility = 'hidden';
+    }
   }
 }
 
@@ -1981,36 +2018,61 @@ function handleDiceClick() {
 }
 
 function rollDice(callback) {
+  if (GS.animating) return;
   GS.animating = true;
+
   const dice = document.getElementById('dynamic-dice');
   dice.classList.add('rolling');
 
-  let elapsed = 0;
-  const id = setInterval(() => {
-    elapsed += 55;
-    setDicePips(Math.ceil(Math.random() * 6));
-    if (elapsed >= 420) {
-      clearInterval(id);
-      let final;
-      if (GS.loadedDice) {
-        final = 6;
-        GS.loadedDice = false;
-        document.getElementById('ad-loaded-dice-btn').classList.remove('used');
-        showToast('🎯 Loaded Dice Fired! You rolled a 6!');
-      } else {
-        final = Math.ceil(Math.random() * 6);
-      }
+  // Pre-calculate final roll outcome (respects Loaded Dice Ad)
+  let finalRoll;
+  if (GS.loadedDice) {
+    finalRoll = 6;
+    GS.loadedDice = false;
+    const loadBtn = document.getElementById('ad-loaded-dice-btn');
+    if (loadBtn) loadBtn.classList.remove('used');
+    showToast('🎯 Loaded Dice armed! Rolled a 6!');
+  } else {
+    finalRoll = Math.floor(Math.random() * 6) + 1;
+  }
 
-      setDicePips(final);
+  // Rapidly shuffle visual dots dynamically during 400ms animation
+  let elapsed = 0;
+  const intervalTime = 45;
+  const totalRollTime = 420;
+
+  const rollInterval = setInterval(() => {
+    elapsed += intervalTime;
+    const randomFace = Math.floor(Math.random() * 6) + 1;
+    setDicePips(randomFace);
+
+    if (elapsed >= totalRollTime) {
+      clearInterval(rollInterval);
+
+      // CRITICAL FIX: FREEZE AND DISPLAY THE EXACT FINAL RANDOM VALUE
+      setDicePips(finalRoll);
       dice.classList.remove('rolling');
-      GS.lastRoll = final;
-      document.getElementById('last-roll-num').textContent = final;
+      GS.lastRoll = finalRoll;
+
+      // Update Last Roll indicator
+      const lastRollEl = document.getElementById('last-roll-num');
+      if (lastRollEl) lastRollEl.textContent = finalRoll;
+
+      // Update caption
+      const caption = document.getElementById('dice-turn-caption');
+      if (caption) caption.textContent = `ROLLED A ${finalRoll}!`;
+
+      // Punch pop scale effect
+      dice.style.transform = 'scale(1.15)';
+      setTimeout(() => { dice.style.transform = 'scale(1)'; }, 180);
+
       GS.animating = false;
 
-      if (callback) callback(final);
-      else onRollResult(final);
+      // Pass the EXACT visible number to game logic
+      if (callback) callback(finalRoll);
+      else onRollResult(finalRoll);
     }
-  }, 55);
+  }, intervalTime);
 }
 
 function onRollResult(roll) {
@@ -2032,17 +2094,17 @@ function handleLudoRoll(roll) {
   const movable = getLudoMovableTokens(GS.currentPlayerIndex, roll);
 
   if (movable.length === 0) {
-    showToast(`${cp.name}: No valid moves! Passing turn...`);
+    showToast(`${cp.name}: No valid moves! Passing...`);
     setTimeout(() => nextTurn(), 850);
     return;
   }
 
-  // CRITICAL REQUIREMENT: When a player rolls a 6 or has choices, DO NOT auto-move!
-  // Glow highlight valid tokens, player must manually click to select!
+  // When rolling a 6 or having options: DO NOT auto-move!
+  // Glow highlight valid tokens, player must manually tap!
   GS.phase = 'selecting';
   GS.selectableTokens = movable;
   highlightLudoTokens(movable);
-  showToast(movable.length > 1 ? 'Select a token to move!' : 'Click your glowing token to move!');
+  showToast(movable.length > 1 ? 'Tap a glowing token to move!' : 'Click your glowing token!');
 }
 
 function getLudoMovableTokens(pIdx, roll) {
@@ -2054,7 +2116,7 @@ function getLudoMovableTokens(pIdx, roll) {
       if (roll === 6) movable.push(ti);
       return;
     }
-    // On shared path or home lane: Exact count required for crown (pos 58 -> 59)
+    // Shared path & Home lane: Exact count required for crown (pos 58 -> 59)
     if (tok.pos + roll <= 58) movable.push(ti);
   });
   return movable;
@@ -2080,13 +2142,13 @@ function onTokenClick(pIdx, tokenIdx) {
   executeLudoMove(pIdx, tokenIdx, GS.lastRoll);
 }
 
-// CRITICAL FIX: Token Spawning & Move Execution
+// CRITICAL FIX: Token Spawning & Move Execution on Correct Base Start Tile
 function executeLudoMove(pIdx, tokenIdx, roll) {
   const p = GS.players[pIdx];
   const tok = p.tokens[tokenIdx];
 
   if (tok.inYard && roll === 6) {
-    // Unlocked! Spawns at route position 1 (which maps to ENTRY_INDEX[pIdx] right outside own base)
+    // Unlocked! Spawns at route position 1 (maps to ENTRY_INDEX[pIdx] outside OWN base)
     tok.inYard = false;
     tok.pos = 1;
     renderAllTokens();
@@ -2193,7 +2255,7 @@ function finalizeLudoMove(pIdx, tokenIdx, isStampedeMv) {
     setTimeout(() => {
       renderStatusBar();
       updateCoinDisplay();
-      updateDynamicDicePositionAndColor();
+      updateDiceColorAndTurnUI();
       if (p.isAI) scheduleAITurn();
       else GS.phase = 'rolling';
     }, 400);
@@ -2347,7 +2409,7 @@ function nextTurn() {
   renderStatusBar();
   updateCoinDisplay();
   updateRageMeter();
-  updateDynamicDicePositionAndColor();
+  updateDiceColorAndTurnUI();
 
   const cp = GS.players[GS.currentPlayerIndex];
   if (cp.isAI) scheduleAITurn();
@@ -2412,31 +2474,33 @@ function triggerStampede() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  RENDER STATUS BAR & TOKENS
+//  RENDER STATUS CARDS & TOKENS
 // ═══════════════════════════════════════════════════════════════
 function renderStatusBar() {
-  const bar = document.getElementById('status-bar');
+  const bar = document.getElementById('underboard-status-row');
   bar.innerHTML = '';
   GS.players.forEach((p, i) => {
-    const chip = document.createElement('div');
-    chip.className = 'player-chip' + (i === GS.currentPlayerIndex ? ' active' : '');
-    chip.style.borderColor = p.color;
-    chip.style.color = p.color;
+    const card = document.createElement('div');
+    const isActive = (i === GS.currentPlayerIndex);
+    card.className = 'player-turn-card' + (isActive ? ' active' : '');
+    card.style.borderColor = p.color;
+    card.style.color = p.color;
 
     const name = document.createElement('div');
-    name.className = 'chip-name';
+    name.className = 'card-pname';
     name.textContent = (p.isAI ? '🤖 ' : '👤 ') + p.name;
 
     const status = document.createElement('div');
-    status.className = 'chip-status';
+    status.className = 'card-pstatus';
     if (GS.mode === 'ludo') {
       const home = p.tokens.filter(t => t.atHome).length;
       status.textContent = `${home}/4 👑`;
     } else {
       status.textContent = p.tokens[0].pos === 0 ? 'START' : `Tile ${p.tokens[0].pos}`;
     }
-    chip.appendChild(name); chip.appendChild(status);
-    bar.appendChild(chip);
+
+    card.appendChild(name); card.appendChild(status);
+    bar.appendChild(card);
   });
 }
 
@@ -2474,7 +2538,7 @@ function renderAllTokens() {
       });
     });
   } else {
-    // Snakes & Ladders Tokens (No cutting, safe sharing)
+    // Snakes & Ladders Tokens (Safe sharing, no cutting)
     const board = document.getElementById('snl-grid');
     const cellW = board.clientWidth / 10, cellH = board.clientHeight / 10;
     const cellTokens = {};
