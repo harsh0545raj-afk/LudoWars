@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════════════════
-   1. CORE MOBILE RESET & FULL-PORTRAIT LAYOUT (100dvh)
+   1. RESET & CORE MOBILE LAYOUT (100dvh, NO SCROLL)
 ════════════════════════════════════════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -15,7 +15,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 :root {
-  --bg: #090a12;
+  --bg: #090a14;
   --neon: #00f5ff;
   --neon2: #ff00ff;
   --purple: #7700ff;
@@ -56,7 +56,7 @@ button {
 }
 @keyframes tokenHopAnim {
   0%,100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-13px) scale(1.22); }
+  50% { transform: translateY(-16px) scale(1.22); filter: drop-shadow(0 12px 14px rgba(0,0,0,0.8)); }
 }
 @keyframes sparkleAnim {
   0% { opacity: 1; transform: scale(0.6) translate(-50%,-50%); }
@@ -71,7 +71,7 @@ button {
 }
 @keyframes diceBreathAnim {
   0%,100% { transform: scale(1); box-shadow: 0 0 16px var(--dice-color); }
-  50% { transform: scale(1.05); box-shadow: 0 0 28px var(--dice-color), 0 0 45px rgba(255,255,255,0.4); }
+  50% { transform: scale(1.06); box-shadow: 0 0 30px var(--dice-color), 0 0 45px rgba(255,255,255,0.4); }
 }
 @keyframes dicePremiumGlow {
   0%,100% {
@@ -167,11 +167,12 @@ button {
   color: var(--neon); opacity: 0.8; margin-top: 6px;
 }
 
-/* ─── LOBBY SCREEN (Modern Mobile Scroll) ─── */
+/* ─── LOBBY SCREEN (Fixed Bottom Padding so Start is never cut) ─── */
 #lobby-screen {
   background: var(--bg);
   justify-content: flex-start;
-  overflow-y: auto; padding: 0 0 28px;
+  overflow-y: auto;
+  padding: 0 0 60px; /* CRITICAL FIX 7: Generous bottom padding */
   z-index: 90;
 }
 #lobby-screen::-webkit-scrollbar { width: 4px; }
@@ -195,7 +196,8 @@ button {
 
 .lobby-body {
   width: 100%; max-width: 480px;
-  padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;
+  padding: 12px 14px 40px; /* Padding bottom for scroll room */
+  display: flex; flex-direction: column; gap: 10px;
 }
 
 .card {
@@ -283,6 +285,7 @@ button {
 }
 #start-btn {
   width: 100%; min-height: 52px;
+  margin-top: 6px; margin-bottom: 24px; /* CRITICAL FIX 7: Margin bottom */
   border-radius: 14px;
   background: linear-gradient(135deg, var(--neon), var(--purple));
   color: #000; font-family: 'Orbitron', sans-serif;
@@ -295,7 +298,7 @@ button {
 /* ════════════════════════════════════════════════════
    4. THEME BACKGROUNDS & AMBIENT GRAPHICS
 ════════════════════════════════════════════════════ */
-body.theme-cyber   { background: #090a12; }
+body.theme-cyber   { background: #090a14; }
 body.theme-ocean   { background: linear-gradient(180deg, #001326 0%, #002244 50%, #000c1a 100%); }
 body.theme-alien   { background: radial-gradient(circle at 50% 30%, #0d0026 0%, #02000a 60%, #000 100%); }
 body.theme-jungle  { background: linear-gradient(180deg, #091a05 0%, #16360c 50%, #051202 100%); }
@@ -332,7 +335,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 .alien-table-figures { font-size: 16px; animation: alienBob 1.8s ease-in-out infinite; }
 
 /* ════════════════════════════════════════════════════
-   5. VERTICAL PHONE-FIRST GAME SCREEN (100dvh, NO SCROLL)
+   5. VERTICAL GAME SCREEN & 4-CORNER LAYOUT
 ════════════════════════════════════════════════════ */
 #game-screen {
   background: transparent;
@@ -343,18 +346,18 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   padding: 0;
 }
 
-/* TOP BAR (Header + Coins + Hamburger) */
+/* TOP BAR */
 #top-bar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 6px 12px; width: 100%;
-  background: rgba(0,0,0,0.65);
+  background: rgba(0,0,0,0.7);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(10px);
   gap: 8px; flex-shrink: 0; z-index: 30;
   min-height: 44px;
 }
 #hamburger-btn {
-  width: 44px; height: 44px; border-radius: 10px;
+  width: 40px; height: 40px; border-radius: 10px;
   background: var(--glass); border: 1px solid var(--border);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 4px; padding: 0;
@@ -362,6 +365,12 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 #hamburger-btn span {
   display: block; width: 18px; height: 2px;
   background: var(--neon); border-radius: 2px;
+}
+#audio-toggle-btn {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--glass); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--neon);
 }
 #game-title {
   flex: 1; text-align: center;
@@ -388,7 +397,49 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   font-size: 10px; font-weight: 900; letter-spacing: 0.5px;
 }
 
-/* MAIN ARENA (Massive Square Board, 8-10px padding from screen edge) */
+/* 4-CORNER PROFILES ROWS (Above & Below the Board) */
+.corner-profiles-row {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 4px 10px; flex-shrink: 0; z-index: 25;
+}
+.player-corner-card {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 8px; border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  background: rgba(10,12,22,0.85);
+  min-width: 95px; max-width: 135px;
+  backdrop-filter: blur(8px);
+  position: relative;
+  transition: all 0.3s ease;
+}
+.player-corner-card.active {
+  border-width: 2.5px;
+  animation: glowBorderPulse 1.4s ease-in-out infinite;
+  background: rgba(20,24,40,0.95);
+  transform: scale(1.05);
+}
+.corner-avatar {
+  font-size: 18px; flex-shrink: 0;
+}
+.corner-info {
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.corner-name {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.corner-status {
+  font-size: 8.5px; color: rgba(255,255,255,0.7);
+}
+.corner-turn-tag {
+  position: absolute; top: -6px; right: 6px;
+  font-size: 7px; font-weight: 900; font-family: 'Orbitron',sans-serif;
+  background: var(--dice-color); color: #000;
+  padding: 1px 4px; border-radius: 4px; display: none;
+}
+.player-corner-card.active .corner-turn-tag { display: block; }
+
+/* ─── MAIN ARENA & 1:1 PERFECT SQUARE BOARD CONTAINER ─── */
 #main-arena {
   flex: 1;
   display: flex; align-items: center; justify-content: center;
@@ -398,7 +449,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 #board-container {
   position: relative;
-  aspect-ratio: 1;
+  aspect-ratio: 1 / 1 !important; /* CRITICAL FIX 2: Strict 1:1 Aspect Ratio */
   margin: 0 auto;
 }
 
@@ -408,6 +459,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   grid-template-columns: repeat(15, 1fr);
   grid-template-rows: repeat(15, 1fr);
   width: 100%; height: 100%;
+  aspect-ratio: 1 / 1 !important;
   border: 2px solid var(--neon);
   border-radius: 8px; overflow: hidden;
   box-shadow: 0 0 35px rgba(0,245,255,0.35);
@@ -418,53 +470,138 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   display: flex; align-items: center; justify-content: center;
   border: 0.5px solid rgba(255,255,255,0.08);
   font-size: 9px; overflow: hidden;
+  aspect-ratio: 1 / 1 !important;
 }
 .ludo-cell.safe-cell::after {
   content: '⭐'; font-size: 9px; pointer-events: none; opacity: 0.95;
 }
-.ludo-cell.start-p1 { background: rgba(0,255,136,0.35) !important; border: 1px solid #00ff88; }
-.ludo-cell.start-p2 { background: rgba(255,51,102,0.35) !important; border: 1px solid #ff3366; }
-.ludo-cell.start-p3 { background: rgba(255,221,0,0.35) !important; border: 1px solid #ffdd00; }
-.ludo-cell.start-p4 { background: rgba(0,245,255,0.35) !important; border: 1px solid #00f5ff; }
+
+/* CRITICAL FIX 3: Authentic Start Tiles & Home Path Highlights */
+.ludo-cell.start-p1 {
+  background: rgba(0,255,136,0.35) !important;
+  border: 1.5px solid #00ff88 !important;
+}
+.ludo-cell.start-p2 {
+  background: rgba(255,51,102,0.35) !important;
+  border: 1.5px solid #ff3366 !important;
+}
+.ludo-cell.start-p3 {
+  background: rgba(255,221,0,0.35) !important;
+  border: 1.5px solid #ffdd00 !important;
+}
+.ludo-cell.start-p4 {
+  background: rgba(0,245,255,0.35) !important;
+  border: 1.5px solid #00f5ff !important;
+}
+
+/* Distinct 5-Tile Home Path Leading to Center */
+.ludo-cell.home-p1 {
+  background: linear-gradient(90deg, rgba(0,255,136,0.35), rgba(0,255,136,0.65)) !important;
+  border: 1px solid rgba(0,255,136,0.5) !important;
+}
+.ludo-cell.home-p2 {
+  background: linear-gradient(0deg, rgba(255,51,102,0.35), rgba(255,51,102,0.65)) !important;
+  border: 1px solid rgba(255,51,102,0.5) !important;
+}
+.ludo-cell.home-p3 {
+  background: linear-gradient(180deg, rgba(255,221,0,0.35), rgba(255,221,0,0.65)) !important;
+  border: 1px solid rgba(255,221,0,0.5) !important;
+}
+.ludo-cell.home-p4 {
+  background: linear-gradient(270deg, rgba(0,245,255,0.35), rgba(0,245,255,0.65)) !important;
+  border: 1px solid rgba(0,245,255,0.5) !important;
+}
+
+/* Directional Arrow Overlay on Home Entrance & Exit */
+.cell-arrow {
+  position: absolute; pointer-events: none; font-size: 11px; font-weight: 900;
+  opacity: 0.95; z-index: 5;
+}
+
 .ludo-cell.center-cell { font-size: 20px; }
 .ludo-cell.yard-p1 { background: rgba(0,255,136,0.22); }
 .ludo-cell.yard-p2 { background: rgba(255,51,102,0.22); }
 .ludo-cell.yard-p3 { background: rgba(255,221,0,0.22); }
 .ludo-cell.yard-p4 { background: rgba(0,245,255,0.22); }
-.ludo-cell.home-p1 { background: rgba(0,255,136,0.28); }
-.ludo-cell.home-p2 { background: rgba(255,51,102,0.28); }
-.ludo-cell.home-p3 { background: rgba(255,221,0,0.28); }
-.ludo-cell.home-p4 { background: rgba(0,245,255,0.28); }
 .ludo-cell.path-cell { background: rgba(255,255,255,0.04); }
 
-/* TOKENS */
+/* CRITICAL FIX 3: Standard Pseudo-3D Ludo Pawn Tokens */
 .token {
-  position: absolute; border-radius: 50%;
-  border: 2px solid #ffffff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 800; color: #000;
-  cursor: pointer; transition: transform 0.15s ease;
+  position: absolute;
+  cursor: pointer;
   z-index: 40; pointer-events: auto;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.7);
+  transition: left 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              top 0.22s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.15s ease;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.7));
 }
 .token:active { transform: scale(0.9) !important; }
-.token.in-yard { opacity: 0.85; }
-.token.crowned { opacity: 1; font-size: 13px; }
+.token.in-yard { opacity: 0.88; }
+.token.crowned { opacity: 1; }
 .token.selectable {
-  animation: glowBorderPulse 0.75s ease-in-out infinite;
   cursor: pointer; z-index: 55;
-  transform: scale(1.25);
-  border-color: #ffff00;
+  animation: glowBorderPulse 0.75s ease-in-out infinite;
+  transform: scale(1.22);
 }
-.token.hopping { animation: tokenHopAnim 0.3s ease; }
+.token.hopping { animation: tokenHopAnim 0.28s ease; }
+.pawn-svg { width: 100%; height: 100%; display: block; }
 
-/* SNL BOARD (10x10 Grid with thick cartoon SVG snakes) */
-#snl-board { width: 100%; height: 100%; position: relative; }
+/* ─── CRITICAL FIX 1 & 5: DYNAMICALLY POSITIONING 3D DICE ─── */
+#dynamic-dice {
+  position: absolute;
+  width: 52px; height: 52px; min-width: 52px; min-height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #222638, #10121d);
+  border: 2.5px solid var(--dice-color);
+  box-shadow: inset 1px 1px 2px rgba(255,255,255,0.35),
+              inset -2px -2px 4px rgba(0,0,0,0.6),
+              0 0 16px var(--dice-color);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 6px; gap: 3px;
+  cursor: pointer; z-index: 60;
+  transform: translate(-50%, -50%);
+  transition: top 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+              left 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s;
+  animation: diceBreathAnim 2s ease-in-out infinite;
+}
+#dynamic-dice:active { transform: translate(-50%, -50%) scale(0.92); }
+#dynamic-dice.rolling {
+  animation: diceWobble 0.1s ease infinite !important;
+  pointer-events: none;
+}
+#dynamic-dice.premium-skin {
+  animation: dicePremiumGlow 1.2s ease-in-out infinite !important;
+}
+
+/* 9 PIPS: Real 6-Sided Recessed Pips */
+.pip {
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff 0%, var(--dice-color) 45%, #000 100%);
+  box-shadow: 0 0 4px var(--dice-color);
+  width: 100%; height: 100%;
+  transition: opacity 0.05s ease;
+}
+.pip.hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  box-shadow: none !important;
+}
+
+/* ─── CRITICAL FIX 4: POLISHED SNAKES & LADDERS (Readable Numbers) ─── */
+#snl-board {
+  width: 100%; height: 100%;
+  aspect-ratio: 1 / 1 !important;
+  position: relative;
+}
 #snl-grid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(10, 1fr);
   width: 100%; height: 100%;
+  aspect-ratio: 1 / 1 !important;
   border: 2px solid var(--neon);
   border-radius: 8px; overflow: hidden;
   box-shadow: 0 0 35px rgba(0,245,255,0.35);
@@ -475,8 +612,9 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   border: 0.5px solid rgba(255,255,255,0.08);
   background: rgba(255,255,255,0.025);
-  font-size: 7.5px; color: rgba(255,255,255,0.55);
+  font-size: 8.5px; color: #fff;
   font-family: 'Orbitron', sans-serif; font-weight: 700;
+  aspect-ratio: 1 / 1 !important;
 }
 .snl-cell:nth-child(even) { background: rgba(255,255,255,0.05); }
 .snl-cell.has-ladder { background: rgba(255,221,0,0.12); }
@@ -488,58 +626,26 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 
 /* ════════════════════════════════════════════════════
-   6. UNDER-BOARD STATUS CARDS (TURN INDICATOR)
+   6. BOTTOM CONTROLS DOCK (POWER-UPS & RAGE)
 ════════════════════════════════════════════════════ */
-#underboard-status-row {
-  display: flex; align-items: center; justify-content: center;
-  padding: 4px 8px; gap: 6px; width: 100%;
-  background: rgba(0,0,0,0.5);
-  border-top: 1px solid rgba(255,255,255,0.06);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  flex-shrink: 0; z-index: 25;
-}
-.player-turn-card {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 4px 6px; border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.03);
-  min-width: 68px; flex: 1; max-width: 90px;
-  transition: all 0.25s ease;
-}
-.player-turn-card.active {
-  border-width: 2px; transform: scale(1.05);
-  animation: glowBorderPulse 1.4s ease-in-out infinite;
-  background: rgba(255,255,255,0.08);
-}
-.card-pname {
-  font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
-}
-.card-pstatus {
-  font-size: 8.5px; color: rgba(255,255,255,0.7); margin-top: 1px;
-}
-
-/* ════════════════════════════════════════════════════
-   7. ACTIVE CONTROLS DOCK (MOBILE THUMB-REACHABLE)
-════════════════════════════════════════════════════ */
-#active-controls-dock {
+#bottom-dock {
   display: flex; flex-direction: column;
-  padding: 6px 10px 8px; gap: 6px; width: 100%;
+  padding: 6px 12px 10px; gap: 6px; width: 100%;
   background: rgba(0,0,0,0.85);
   border-top: 1px solid var(--border);
   backdrop-filter: blur(12px);
   flex-shrink: 0; z-index: 30;
 }
 
-/* Row 1: Quick Ad Power-ups (min-height 44px for thumbs) */
+/* In-Match Ad Power-ups */
 #ad-powerups-row {
   display: flex; align-items: center; justify-content: space-between;
   gap: 6px; width: 100%;
 }
 .ad-powerup-btn {
-  flex: 1; min-height: 44px;
+  flex: 1; min-height: 42px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 4px 6px; border-radius: 10px;
+  padding: 3px 6px; border-radius: 10px;
   border: 1px solid rgba(255,140,0,0.5);
   background: linear-gradient(180deg, rgba(255,140,0,0.18) 0%, rgba(255,60,0,0.09) 100%);
   color: #fff; font-family: 'Orbitron', sans-serif;
@@ -551,19 +657,16 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   opacity: 0.45; border-color: rgba(255,255,255,0.15);
   background: rgba(255,255,255,0.04);
 }
-.ad-powerup-btn .icon { font-size: 15px; }
+.ad-powerup-btn .icon { font-size: 14px; }
 .ad-powerup-btn .tag { font-size: 6.5px; color: var(--yellow); }
 
-/* Row 2: Rage Bar (Left) + Big Dice Station (Center) + Last Roll (Right) */
-#dock-main-row {
+/* Rage Bar & Last Roll */
+#dock-bottom-subrow {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px; width: 100%;
 }
-
-/* Left: Rage Section */
 #rage-dock-col {
   flex: 1; display: flex; flex-direction: column; gap: 3px;
-  min-width: 80px;
 }
 .rage-header-row {
   display: flex; align-items: center; justify-content: space-between;
@@ -588,79 +691,30 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   box-shadow: 0 0 8px var(--red);
 }
 #stampede-btn {
-  display: none; min-height: 28px; padding: 4px 6px; border-radius: 6px;
+  display: none; min-height: 28px; padding: 4px 8px; border-radius: 6px;
   background: linear-gradient(135deg, var(--red), var(--orange));
   color: #fff; font-size: 8px; font-weight: 900; letter-spacing: 0.5px;
   animation: rageFlashBar 0.8s infinite;
 }
 #stampede-btn.visible { display: block; }
 
-/* Center: BIG DYNAMIC DICE STATION (Thumb-Interactive, Exact Player Color) */
-#dice-station-center {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-}
-#dynamic-dice {
-  width: 64px; height: 64px; min-width: 64px; min-height: 64px;
-  border-radius: 16px;
-  background: linear-gradient(145deg, #181b2a, #0d0f17);
-  border: 3px solid var(--dice-color);
-  box-shadow: 0 0 20px var(--dice-color);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  padding: 8px; gap: 3px;
-  cursor: pointer; position: relative;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s;
-  animation: diceBreathAnim 2s ease-in-out infinite;
-}
-#dynamic-dice:active { transform: scale(0.92); }
-#dynamic-dice.rolling {
-  animation: diceWobble 0.1s ease infinite !important;
-  pointer-events: none;
-}
-#dynamic-dice.premium-skin {
-  animation: dicePremiumGlow 1.2s ease-in-out infinite !important;
-}
-
-/* 9 PIPS: CSS Variable Driven to prevent specificity lock */
-.pip {
-  border-radius: 50%;
-  background: var(--dice-color, #00ff88);
-  box-shadow: 0 0 6px var(--dice-color, #00ff88);
-  width: 100%; height: 100%;
-  transition: opacity 0.05s ease;
-}
-.pip.hidden {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  box-shadow: none !important;
-}
-
-#dice-turn-caption {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 8.5px; font-weight: 800; letter-spacing: 0.5px;
-  color: var(--dice-color); text-shadow: 0 0 8px var(--dice-color);
-  text-align: center;
-}
-
-/* Right: Last Roll Section */
 #lastroll-dock-col {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: flex-end; justify-content: center;
-  min-width: 70px;
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.04); padding: 4px 8px;
+  border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
 }
 .lastroll-label {
-  font-size: 7.5px; color: rgba(255,255,255,0.5);
-  font-family: 'Orbitron', sans-serif; letter-spacing: 0.5px;
+  font-size: 8px; color: rgba(255,255,255,0.5);
+  font-family: 'Orbitron', sans-serif;
 }
 #last-roll-num {
-  font-size: 22px; font-weight: 900;
+  font-size: 18px; font-weight: 900;
   color: var(--dice-color); font-family: 'Orbitron', sans-serif;
   text-shadow: 0 0 10px var(--dice-color);
 }
 
 /* ════════════════════════════════════════════════════
-   8. THEME STORE MODAL
+   7. THEME STORE MODAL
 ════════════════════════════════════════════════════ */
 #theme-store {
   position: fixed; inset: 0;
@@ -733,7 +787,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 
 /* ════════════════════════════════════════════════════
-   9. AD LOADING & REWARD MODAL
+   8. AD LOADING & MODALS
 ════════════════════════════════════════════════════ */
 #ad-loading {
   position: fixed; inset: 0;
@@ -762,9 +816,6 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   color: var(--green); display: none;
 }
 
-/* ════════════════════════════════════════════════════
-   10. SIDE MENU & RULES & WIN SCREEN
-════════════════════════════════════════════════════ */
 #side-menu { position: fixed; inset: 0; z-index: 200; pointer-events: none; }
 #side-menu.open { pointer-events: auto; }
 #menu-overlay {
@@ -843,12 +894,9 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   animation: confettiFall linear forwards; opacity: 0;
 }
 
-/* ════════════════════════════════════════════════════
-   11. EASTER EGG & TOAST
-════════════════════════════════════════════════════ */
 #easter-snake {
   position: fixed; pointer-events: none; z-index: 50;
-  bottom: 120px; font-size: 38px; display: none;
+  bottom: 110px; font-size: 38px; display: none;
   filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));
 }
 .easter-bubble {
@@ -863,7 +911,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   z-index: 45; animation: sparkleAnim 0.5s ease forwards;
 }
 #toast {
-  position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
+  position: fixed; bottom: 105px; left: 50%; transform: translateX(-50%);
   background: rgba(10,12,20,0.92); border: 1px solid var(--neon);
   border-radius: 20px; padding: 8px 18px; font-size: 12px; font-weight: 600;
   color: #fff; z-index: 500; opacity: 0; transition: opacity 0.3s;
@@ -965,17 +1013,21 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
       <div id="player-list"></div>
     </div>
 
+    <!-- CRITICAL FIX 7: Generous bottom margin so Start Match is never cut off -->
     <button id="start-btn">⚡ START MATCH</button>
   </div>
 </div>
 
-<!-- ░░░ 3. VERTICAL PORTRAIT GAME SCREEN ░░░ -->
+<!-- ░░░ 3. VERTICAL PORTRAIT GAME SCREEN (CRITICAL FIX 1 & 2) ░░░ -->
 <div class="screen hidden" id="game-screen">
 
-  <!-- 1. Top Bar -->
+  <!-- Top Bar with Audio Mute/Unmute Toggle Button -->
   <div id="top-bar">
     <button id="hamburger-btn" aria-label="Menu">
       <span></span><span></span><span></span>
+    </button>
+    <button id="audio-toggle-btn" onclick="toggleAudio()" aria-label="Toggle Sound">
+      🔊
     </button>
     <div id="game-title">LUDO WARS</div>
     <div class="top-action-cluster">
@@ -984,7 +1036,30 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
     </div>
   </div>
 
-  <!-- 2. Main Game Arena (Massive Centered Square Board) -->
+  <!-- CRITICAL FIX 1: TOP 2 CORNER PLAYER PROFILES (P1 Green TL & P3 Yellow TR) -->
+  <div class="corner-profiles-row" id="top-profiles-row">
+    <!-- P1 (Green, Top-Left) -->
+    <div class="player-corner-card" id="corner-card-0" onclick="handleCornerCardClick(0)">
+      <div class="corner-avatar">🟢</div>
+      <div class="corner-info">
+        <div class="corner-name" id="cname-0">Player 1</div>
+        <div class="corner-status" id="cstatus-0">0/4 👑</div>
+      </div>
+      <div class="corner-turn-tag">ROLL!</div>
+    </div>
+
+    <!-- P3 (Yellow, Top-Right) -->
+    <div class="player-corner-card" id="corner-card-2" onclick="handleCornerCardClick(2)">
+      <div class="corner-turn-tag">ROLL!</div>
+      <div class="corner-info" style="align-items:flex-end">
+        <div class="corner-name" id="cname-2">Player 3</div>
+        <div class="corner-status" id="cstatus-2">0/4 👑</div>
+      </div>
+      <div class="corner-avatar">🟡</div>
+    </div>
+  </div>
+
+  <!-- Main Game Arena (Strict 1:1 Square Board) -->
   <div id="main-arena">
     <div id="board-container">
       <!-- Ludo Board (15x15) -->
@@ -994,15 +1069,47 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
         <div id="snl-grid"></div>
         <svg id="snl-svg-overlay" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
       </div>
+
+      <!-- CRITICAL FIX 1 & 5: DYNAMICALLY POSITIONING 3D DICE -->
+      <div id="dynamic-dice" onclick="handleDiceClick()" role="button" aria-label="Roll Dice">
+        <div class="pip hidden" id="dp1"></div>
+        <div class="pip hidden" id="dp2"></div>
+        <div class="pip hidden" id="dp3"></div>
+        <div class="pip hidden" id="dp4"></div>
+        <div class="pip hidden" id="dp5"></div>
+        <div class="pip hidden" id="dp6"></div>
+        <div class="pip hidden" id="dp7"></div>
+        <div class="pip hidden" id="dp8"></div>
+        <div class="pip hidden" id="dp9"></div>
+      </div>
     </div>
   </div>
 
-  <!-- 3. Under-Board Player Status Cards (Turn Indicator) -->
-  <div id="underboard-status-row"></div>
+  <!-- CRITICAL FIX 1: BOTTOM 2 CORNER PLAYER PROFILES (P2 Red BL & P4 Cyan BR) -->
+  <div class="corner-profiles-row" id="bottom-profiles-row">
+    <!-- P2 (Red, Bottom-Left) -->
+    <div class="player-corner-card" id="corner-card-1" onclick="handleCornerCardClick(1)">
+      <div class="corner-avatar">🔴</div>
+      <div class="corner-info">
+        <div class="corner-name" id="cname-1">Player 2</div>
+        <div class="corner-status" id="cstatus-1">0/4 👑</div>
+      </div>
+      <div class="corner-turn-tag">ROLL!</div>
+    </div>
 
-  <!-- 4. Active Controls Dock (Thumb-Reachable at Bottom) -->
-  <div id="active-controls-dock">
+    <!-- P4 (Cyan, Bottom-Right) -->
+    <div class="player-corner-card" id="corner-card-3" onclick="handleCornerCardClick(3)">
+      <div class="corner-turn-tag">ROLL!</div>
+      <div class="corner-info" style="align-items:flex-end">
+        <div class="corner-name" id="cname-3">Player 4</div>
+        <div class="corner-status" id="cstatus-3">0/4 👑</div>
+      </div>
+      <div class="corner-avatar">🔵</div>
+    </div>
+  </div>
 
+  <!-- Bottom Dock (Power-ups & Rage & Last Roll) -->
+  <div id="bottom-dock">
     <!-- Row 1: Continuous In-Match Ad Power-ups -->
     <div id="ad-powerups-row">
       <button class="ad-powerup-btn" id="ad-loaded-dice-btn" onclick="watchAdLoadedDice()">
@@ -1022,41 +1129,21 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
       </button>
     </div>
 
-    <!-- Row 2: Rage Bar (Left) + Big Dice Station (Center) + Last Roll (Right) -->
-    <div id="dock-main-row">
-
-      <!-- Left: Rage Meter -->
+    <!-- Row 2: Rage Bar + Stampede button + Last Roll -->
+    <div id="dock-bottom-subrow">
       <div id="rage-dock-col">
         <div class="rage-header-row">
-          <div id="rage-label">⚡ Rage</div>
+          <div id="rage-label">⚡ Rage Meter</div>
           <div id="rage-pct">0%</div>
         </div>
         <div id="rage-bar-bg"><div id="rage-bar-fill" style="width:0%"></div></div>
         <button id="stampede-btn" onclick="triggerStampede()">💥 STAMPEDE! (+12)</button>
       </div>
 
-      <!-- Center: BIG INTERACTIVE DICE STATION -->
-      <div id="dice-station-center">
-        <div id="dynamic-dice" onclick="handleDiceClick()" role="button" aria-label="Roll Dice">
-          <div class="pip hidden" id="dp1"></div>
-          <div class="pip hidden" id="dp2"></div>
-          <div class="pip hidden" id="dp3"></div>
-          <div class="pip hidden" id="dp4"></div>
-          <div class="pip hidden" id="dp5"></div>
-          <div class="pip hidden" id="dp6"></div>
-          <div class="pip hidden" id="dp7"></div>
-          <div class="pip hidden" id="dp8"></div>
-          <div class="pip hidden" id="dp9"></div>
-        </div>
-        <div id="dice-turn-caption">TAP TO ROLL</div>
-      </div>
-
-      <!-- Right: Last Roll Display -->
       <div id="lastroll-dock-col">
-        <div class="lastroll-label">LAST ROLL</div>
-        <div id="last-roll-num">-</div>
+        <span class="lastroll-label">LAST ROLL:</span>
+        <span id="last-roll-num">-</span>
       </div>
-
     </div>
   </div>
 </div>
@@ -1098,27 +1185,19 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
     <h2>📖 GAME RULES</h2>
     <h3 style="color:var(--green);font-size:12px;margin:8px 0 4px">Classic Ludo</h3>
     <ul>
-      <li>Roll a <strong>6</strong> to unlock a token from the yard.</li>
-      <li><strong>Token Spawn:</strong> Unlocked tokens spawn on your own base's start tile!</li>
-      <li><strong>Dynamic Dice:</strong> Turns the exact color of the current player.</li>
+      <li>Roll a <strong>6</strong> to unlock a token from your base yard.</li>
+      <li><strong>Token Spawn:</strong> Unlocks onto your own colored starting arrow tile outside your base!</li>
+      <li><strong>Dynamic Dice:</strong> Moves right next to the active player's corner profile.</li>
       <li>Landing on an opponent's token sends it home and grants an <strong>extra roll</strong>!</li>
-      <li>⭐ Star cells are safe zones (no cutting).</li>
-      <li>Need an exact count to reach the center crown (👑). First with all 4 tokens home wins!</li>
+      <li>⭐ Star cells are safe zones (no captures).</li>
+      <li>5-tile highlighted home path leads into the 👑 center crown. First to crown all 4 tokens wins!</li>
     </ul>
     <h3 style="color:var(--yellow);font-size:12px;margin:10px 0 4px">Snakes &amp; Ladders</h3>
     <ul>
-      <li>Single token per player. Race to tile 100!</li>
+      <li>Race to tile 100! Numbers are clear and readable.</li>
       <li>🪜 Ladders grant +25 coins and an extra roll!</li>
       <li>🐍 Cartoon snakes slide you down to their tail.</li>
       <li>Multiple players can share the same tile safely.</li>
-      <li>Tile 100 requires exact roll; overshoot bounces back!</li>
-    </ul>
-    <h3 style="color:var(--orange);font-size:12px;margin:10px 0 4px">⚡ Rage &amp; Ad Power-ups</h3>
-    <ul>
-      <li>Rage fills +3%/turn. At 100%, activate <strong>STAMPEDE (+12 tiles)</strong>!</li>
-      <li><strong>Loaded Dice:</strong> Watch an ad to guarantee a 6 on your next roll!</li>
-      <li><strong>Rage Boost:</strong> Watch an ad to instantly max your Rage to 100%!</li>
-      <li><strong>Premium Dice:</strong> Watch an ad for a holographic animated neon dice!</li>
     </ul>
     <button id="close-rules" onclick="hideRules()">GOT IT!</button>
   </div>
@@ -1137,16 +1216,206 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 <div id="toast"></div>
 
 <!-- ════════════════════════════════════════════════════
+     SYNTHESIZED WEB AUDIO ENGINE (ZERO EXTERNAL FILES)
+════════════════════════════════════════════════════ -->
+<script>
+class WebAudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.isMuted = localStorage.getItem('lw_muted') === 'true';
+    this.bgmOsc1 = null;
+    this.bgmOsc2 = null;
+    this.bgmGain = null;
+    this.bgmTimer = null;
+    this.bgmStep = 0;
+  }
+
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        this.ctx = new AudioCtx();
+      }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+    if (!this.isMuted && !this.bgmTimer) {
+      this.startBGM();
+    }
+  }
+
+  toggleMute() {
+    this.init();
+    this.isMuted = !this.isMuted;
+    localStorage.setItem('lw_muted', this.isMuted);
+    const btn = document.getElementById('audio-toggle-btn');
+    if (btn) btn.textContent = this.isMuted ? '🔇' : '🔊';
+
+    if (this.isMuted) {
+      this.stopBGM();
+    } else {
+      this.startBGM();
+    }
+    return this.isMuted;
+  }
+
+  // Tactile 'pop/click' sound on token tile hop
+  playMoveSound() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      const now = this.ctx.currentTime;
+      osc.frequency.setValueAtTime(620, now);
+      osc.frequency.exponentialRampToValueAtTime(180, now + 0.07);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } catch (e) {}
+  }
+
+  // Aggressive 'strike/crunch' sound on token capture
+  playCaptureSound() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      // Sawtooth punch
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(360, now);
+      osc.frequency.exponentialRampToValueAtTime(45, now + 0.32);
+      gain.gain.setValueAtTime(0.45, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.33);
+
+      // Distorted noise burst
+      const bufferSize = this.ctx.sampleRate * 0.15;
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.35, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      noise.connect(noiseGain);
+      noiseGain.connect(this.ctx.destination);
+      noise.start(now);
+    } catch (e) {}
+  }
+
+  // Dice tumble rattle sound
+  playDiceRollSound() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      for (let i = 0; i < 5; i++) {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        const t = now + i * 0.05;
+        osc.frequency.setValueAtTime(320 + Math.random() * 300, t);
+        gain.gain.setValueAtTime(0.12, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.045);
+      }
+    } catch (e) {}
+  }
+
+  // Looped Futuristic Ambient Background Music
+  startBGM() {
+    if (this.isMuted || !this.ctx) return;
+    this.stopBGM();
+
+    const notes = [261.63, 329.63, 392.00, 523.25, 493.88, 392.00, 329.63, 293.66]; // C-E-G-C-B-G-E-D
+    this.bgmTimer = setInterval(() => {
+      if (this.isMuted || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        const freq = notes[this.bgmStep % notes.length];
+        this.bgmStep++;
+
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.035, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+        // Lowpass filter for smooth ambient tone
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(900, now);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.38);
+      } catch (e) {}
+    }, 380);
+  }
+
+  stopBGM() {
+    if (this.bgmTimer) {
+      clearInterval(this.bgmTimer);
+      this.bgmTimer = null;
+    }
+  }
+
+  playWinFanfare() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const chords = [523.25, 659.25, 783.99, 1046.50];
+      const now = this.ctx.currentTime;
+      chords.forEach((freq, i) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        const t = now + i * 0.12;
+        osc.frequency.setValueAtTime(freq, t);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.65);
+      });
+    } catch (e) {}
+  }
+}
+
+const AudioSys = new WebAudioEngine();
+function toggleAudio() {
+  AudioSys.toggleMute();
+}
+// Unlock Web Audio on first user interaction anywhere
+window.addEventListener('pointerdown', () => AudioSys.init(), { once: true });
+</script>
+
+<!-- ════════════════════════════════════════════════════
      CORE GAME LOGIC & JAVASCRIPT ENGINE
 ════════════════════════════════════════════════════ -->
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   LUDO WARS – Ultimate Premium Edition v3.5
-   Mobile Portrait-First Game Engine by AetherByte Studios
+   LUDO WARS – Ultimate Premium Edition v4.0
+   Play Store Ready Edition by AetherByte Studios
 ═══════════════════════════════════════════════════════════════ */
 
-// ── 1. EXACT LUDO 15x15 GEOMETRY & PATH DEFINITIONS ───────────
-// Shared Path: 52 tiles circulating clockwise around 15x15 board
+// ── 1. EXACT LUDO 15x15 GEOMETRY & AUTHENTIC SAFE ZONES ────────
 const SHARED_PATH = [
   [6,1],[6,2],[6,3],[6,4],[6,5],             // 0–4:   Left arm (top lane)
   [5,6],[4,6],[3,6],[2,6],[1,6],[0,6],       // 5–10:  Top arm (left lane)
@@ -1164,10 +1433,10 @@ const SHARED_PATH = [
 ];
 
 // CRITICAL FIX: EXACT PLAYER BASE & START TILE MAPPING
-// P1 (Green)  -> Top-Left base    -> Starts at [6,1]  (index 0)
-// P2 (Red)    -> Bottom-Left base -> Starts at [13,6] (index 39)
-// P3 (Yellow) -> Top-Right base   -> Starts at [1,8]  (index 13)
-// P4 (Cyan)   -> Bottom-Right base-> Starts at [8,13] (index 26)
+// P1 (Green)  -> Top-Left base    -> Starts at [6,1]  (shared index 0)
+// P2 (Red)    -> Bottom-Left base -> Starts at [13,6] (shared index 39)
+// P3 (Yellow) -> Top-Right base   -> Starts at [1,8]  (shared index 13)
+// P4 (Cyan)   -> Bottom-Right base-> Starts at [8,13] (shared index 26)
 const ENTRY_INDEX = [0, 39, 13, 26];
 
 // Exact Home Columns leading directly into center crown [7,7]
@@ -1178,10 +1447,18 @@ const HOME_COLS = [
   [[7,13],[7,12],[7,11],[7,10],[7,9],[7,8]], // P4 Cyan  (Right arm into center)
 ];
 
-// Star safe tiles on shared path (no cutting)
+// CRITICAL FIX 3: Authentic Safe Zones (4 Starts + 4 Stars 8-steps ahead)
+// 0: [6,1] Green Start
+// 8: [2,6] Top arm 4th cell Star
+// 13: [1,8] Yellow Start
+// 21: [6,12] Right arm 4th cell Star
+// 26: [8,13] Cyan Start
+// 34: [12,8] Bottom arm 4th cell Star
+// 39: [13,6] Red Start
+// 47: [8,2] Left arm 4th cell Star
 const SAFE_INDICES = [0, 8, 13, 21, 26, 34, 39, 47];
 
-// Yard Interior Token Spots (arranged neatly around the center of each yard)
+// Yard Interior Token Spots (arranged around center of base)
 const YARD_SPOTS = [
   [[1,1],[1,4],[4,1],[4,4]],     // P1 Green TL
   [[10,1],[10,4],[13,1],[13,4]], // P2 Red BL
@@ -1189,7 +1466,6 @@ const YARD_SPOTS = [
   [[10,10],[10,13],[13,10],[13,13]], // P4 Cyan BR
 ];
 
-// Yard Base Regions on 15x15 board
 const YARD_RANGES = [
   {r:[0,5],  c:[0,5],  cls:'yard-p1', name:'P1 Green'},
   {r:[9,14], c:[0,5],  cls:'yard-p2', name:'P2 Red'},
@@ -1199,7 +1475,17 @@ const YARD_RANGES = [
 
 const HOME_CLASSES = ['home-p1','home-p2','home-p3','home-p4'];
 const P_COLORS = ['#00ff88','#ff3366','#ffdd00','#00f5ff'];
+const P_COLORS_DARK = ['#008f4c','#b3143c','#b39b00','#0099a8'];
+const P_COLORS_LIGHT = ['#7affc4','#ff85a1','#fff176','#80faff'];
 const P_NAMES_DEFAULT = ['Player 1','Player 2','Player 3','Player 4'];
+
+// CRITICAL FIX 1: Exact coordinates inside #board-container where dice docks next to active player's base
+const CORNER_DICE_DOCKS = [
+  { top: '12%', left: '12%' }, // P1 Green (Top-Left Base)
+  { top: '88%', left: '12%' }, // P2 Red   (Bottom-Left Base)
+  { top: '12%', left: '88%' }, // P3 Yellow(Top-Right Base)
+  { top: '88%', left: '88%' }, // P4 Cyan  (Bottom-Right Base)
+];
 
 // ── 2. SNAKES & LADDERS DEFINITIONS ───────────────────────────
 const SNL_SNAKES  = { 16:6, 47:26, 49:11, 56:53, 62:19, 64:60, 87:24, 93:73, 95:75, 99:78 };
@@ -1219,7 +1505,6 @@ const THEMES = [
   { id:'ninja',   name:'Ninja Dojo',       emoji:'🥷', price:1000, cssClass:'theme-ninja',   boardGlow:'#ff2200' },
 ];
 
-// Persistent Wallet & Unlocked Themes (localStorage)
 let wallet = parseInt(localStorage.getItem('lw_coins') || '500');
 let ownedThemes = JSON.parse(localStorage.getItem('lw_owned') || '["cyber"]');
 let activeThemeId = localStorage.getItem('lw_active_theme') || 'cyber';
@@ -1237,12 +1522,12 @@ let GS = {
   players: [],
   currentPlayerIndex: 0,
   lastRoll: 0,
-  phase: 'rolling',          // 'rolling' | 'selecting'
+  phase: 'rolling',
   selectableTokens: [],
   animating: false,
   extraTurn: false,
-  loadedDice: false,         // Force next roll to be a 6
-  premiumSkin: false,        // Special holographic animated dice
+  loadedDice: false,
+  premiumSkin: false,
 };
 
 let lobbySettings = {
@@ -1252,7 +1537,7 @@ let lobbySettings = {
   playerData: [],
 };
 
-// 9-Pip Dice Display Patterns (3x3 grid)
+// Real 6-Sided Dice Pip Grid Arrangement (3x3 grid)
 const PIP_PATTERNS = {
   1: [0,0,0, 0,1,0, 0,0,0],
   2: [0,0,1, 0,0,0, 1,0,0],
@@ -1270,6 +1555,9 @@ window.addEventListener('DOMContentLoaded', () => {
   buildLobbyPlayerList();
   updateLobbyCoins();
   buildThemeStore();
+
+  const audioBtn = document.getElementById('audio-toggle-btn');
+  if (audioBtn) audioBtn.textContent = AudioSys.isMuted ? '🔇' : '🔊';
 
   setTimeout(() => {
     document.getElementById('splash-screen').classList.add('hidden');
@@ -1402,7 +1690,6 @@ function showAd(rewardTitle) {
   });
 }
 
-// 1. Lobby Base Monetization: +100 Coins
 async function watchAdLobby() {
   const btn = document.getElementById('lobby-watch-ad-btn');
   btn.disabled = true;
@@ -1414,7 +1701,6 @@ async function watchAdLobby() {
   btn.disabled = false;
 }
 
-// 2. In-Match: Loaded Dice (Force next roll as a 6)
 async function watchAdLoadedDice() {
   if (GS.animating) return;
   const btn = document.getElementById('ad-loaded-dice-btn');
@@ -1424,7 +1710,6 @@ async function watchAdLoadedDice() {
   showToast('🎯 Loaded Dice armed! Next roll is guaranteed 6!');
 }
 
-// 3. In-Match: Rage Boost (Instant 100% Rage Meter)
 async function watchAdRageBoost() {
   if (GS.animating) return;
   const btn = document.getElementById('ad-rage-boost-btn');
@@ -1438,7 +1723,6 @@ async function watchAdRageBoost() {
   showToast('⚡ Rage Maxed! STAMPEDE is Ready!');
 }
 
-// 4. In-Match: Premium Holographic Animated Dice Skin
 async function watchAdPremiumDice() {
   if (GS.animating) return;
   const btn = document.getElementById('ad-premium-dice-btn');
@@ -1535,9 +1819,6 @@ function updateActiveThemeDisplay() {
   if (t) document.getElementById('active-theme-display').textContent = `${t.emoji} ${t.name}`;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  THEME APPLICATION & DYNAMIC BACKGROUND PARTICLES
-// ═══════════════════════════════════════════════════════════════
 function applyThemeById(themeId) {
   THEMES.forEach(t => document.body.classList.remove(t.cssClass));
   const theme = THEMES.find(t => t.id === themeId) || THEMES[0];
@@ -1593,19 +1874,16 @@ function buildOceanTheme() {
   }
 }
 
-// Crucial Alien Space Station with Floating Astronauts & Aliens Playing Ludo
 function buildAlienStationTheme() {
   const bg = document.getElementById('bg-layer');
   const alienLayer = document.getElementById('alien-interactive-layer');
 
-  // Twinkling Starfield
   for (let i = 0; i < 45; i++) {
     const star = document.createElement('div');
     star.style.cssText = `position:fixed;width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;background:#fff;border-radius:50%;top:${Math.random()*100}%;left:${Math.random()*100}%;opacity:${0.2+Math.random()*0.7};pointer-events:none;`;
     bg.appendChild(star);
   }
 
-  // Floating Astronauts & Cosmonauts
   const cosmos = ['👨‍🚀','👩‍🚀','🛸','🪐','⭐','🌌'];
   for (let i = 0; i < 7; i++) {
     const el = document.createElement('div');
@@ -1620,7 +1898,6 @@ function buildAlienStationTheme() {
     alienLayer.appendChild(el);
   }
 
-  // Interactive Station: Aliens playing Ludo
   const table = document.createElement('div');
   table.className = 'alien-ludo-table';
   table.innerHTML = `
@@ -1645,6 +1922,8 @@ function buildNinjaTheme()   { spawnFloatingBgEmojis(['🥷','⚔️','🏮','�
 //  START GAME & SCREEN TRANSITION
 // ═══════════════════════════════════════════════════════════════
 function startGame() {
+  AudioSys.init();
+
   const playerInputs = document.querySelectorAll('.player-name-input');
   const aiToggles    = document.querySelectorAll('.ai-toggle');
 
@@ -1665,6 +1944,8 @@ function startGame() {
     const player = {
       name: nameVal.substring(0,7) || P_NAMES_DEFAULT[i],
       color: P_COLORS[i],
+      colorDark: P_COLORS_DARK[i],
+      colorLight: P_COLORS_LIGHT[i],
       isAI,
       coins: 100,
       rageMeter: 0,
@@ -1698,22 +1979,22 @@ function startGame() {
   }
 
   sizeBoard();
-  renderStatusBar();
+  renderCornerProfiles();
   renderAllTokens();
   updateCoinDisplay();
   updateRageMeter();
-  updateDiceColorAndTurnUI();
+  updateDynamicDicePositionAndColor();
   setDicePips(1);
 
   if (GS.players[0].isAI) scheduleAITurn();
 }
 
-// ── PHONE-FIRST BOARD SIZING (Max 100vw, 8-10px Outer Margin) ──
+// ── CRITICAL FIX 2: STRICT 1:1 PERFECT SQUARE BOARD SIZING ──
 function sizeBoard() {
   const arena = document.getElementById('main-arena');
   const bc    = document.getElementById('board-container');
-  // Leave 8px margin on each side to prevent touch edge conflicts & zooming
-  const availW = arena.clientWidth - 16;
+  // Strict 1:1 square: minimum of available width and height
+  const availW = arena.clientWidth - 8;
   const availH = arena.clientHeight - 8;
   const size = Math.floor(Math.min(availW, availH));
   bc.style.width  = size + 'px';
@@ -1723,42 +2004,104 @@ window.addEventListener('resize', () => {
   if (!document.getElementById('game-screen').classList.contains('hidden')) {
     sizeBoard();
     renderAllTokens();
+    updateDynamicDicePositionAndColor();
     if (GS.mode === 'snl') drawSNLOverlay();
   }
 });
 
 // ═══════════════════════════════════════════════════════════════
-//  DICE COLOR & TURN UI DOCK FIX
+//  CRITICAL FIX 1: DYNAMIC CORNER PROFILES & PHYSICAL DICE DOCK
 // ═══════════════════════════════════════════════════════════════
-function updateDiceColorAndTurnUI() {
+function renderCornerProfiles() {
+  const cornerCards = [
+    document.getElementById('corner-card-0'), // P1 Green TL
+    document.getElementById('corner-card-1'), // P2 Red BL
+    document.getElementById('corner-card-2'), // P3 Yellow TR
+    document.getElementById('corner-card-3'), // P4 Cyan BR
+  ];
+
+  // Configure each of the 4 corner profile cards
+  for (let i = 0; i < 4; i++) {
+    const card = cornerCards[i];
+    if (!card) continue;
+    const p = GS.players[i];
+    if (!p) {
+      card.style.opacity = '0.2';
+      card.style.pointerEvents = 'none';
+      card.classList.remove('active');
+      continue;
+    }
+
+    card.style.opacity = '1';
+    card.style.pointerEvents = 'auto';
+    const isActive = (i === GS.currentPlayerIndex);
+    if (isActive) {
+      card.classList.add('active');
+      card.style.borderColor = p.color;
+      card.style.boxShadow = `0 0 18px ${p.color}`;
+    } else {
+      card.classList.remove('active');
+      card.style.borderColor = 'rgba(255,255,255,0.15)';
+      card.style.boxShadow = 'none';
+    }
+
+    const nameEl = document.getElementById(`cname-${i}`);
+    if (nameEl) nameEl.textContent = (p.isAI ? '🤖 ' : '👤 ') + p.name;
+
+    const statusEl = document.getElementById(`cstatus-${i}`);
+    if (statusEl) {
+      if (GS.mode === 'ludo') {
+        const home = p.tokens.filter(t => t.atHome).length;
+        statusEl.textContent = `${home}/4 👑`;
+      } else {
+        statusEl.textContent = p.tokens[0].pos === 0 ? 'START' : `Tile ${p.tokens[0].pos}`;
+      }
+    }
+  }
+}
+
+function handleCornerCardClick(pIdx) {
+  if (pIdx === GS.currentPlayerIndex && !GS.players[pIdx].isAI) {
+    handleDiceClick();
+  }
+}
+
+function updateDynamicDicePositionAndColor() {
+  const dice = document.getElementById('dynamic-dice');
   const cp = GS.players[GS.currentPlayerIndex];
   if (!cp) return;
 
   const color = cp.color;
   document.documentElement.style.setProperty('--dice-color', color);
 
-  // Update dynamic dice element CSS variable
-  const dice = document.getElementById('dynamic-dice');
+  // Dice visual color matching active player
   dice.style.setProperty('--dice-color', color);
   dice.style.borderColor = color;
-  dice.style.boxShadow = `0 0 20px ${color}`;
+  dice.style.boxShadow = `inset 1px 1px 2px rgba(255,255,255,0.35), inset -2px -2px 4px rgba(0,0,0,0.6), 0 0 20px ${color}`;
 
-  // Update pips color
   document.querySelectorAll('#dynamic-dice .pip').forEach(p => {
     p.style.setProperty('--dice-color', color);
   });
 
-  // Update caption
-  const caption = document.getElementById('dice-turn-caption');
-  caption.textContent = cp.isAI ? `🤖 ${cp.name}'s Turn` : `TAP TO ROLL (${cp.name})`;
-  caption.style.color = color;
+  document.getElementById('last-roll-num').style.color = color;
 
-  // Update Under-Board cards
-  renderStatusBar();
+  // CRITICAL FIX 1: Physically glide/dock next to active player's base/profile
+  if (GS.mode === 'ludo') {
+    const dock = CORNER_DICE_DOCKS[GS.currentPlayerIndex] || { top: '50%', left: '50%' };
+    dice.style.top  = dock.top;
+    dice.style.left = dock.left;
+  } else {
+    // S&L: Central dock or active player dock
+    const dock = CORNER_DICE_DOCKS[GS.currentPlayerIndex] || { top: '50%', left: '50%' };
+    dice.style.top  = dock.top;
+    dice.style.left = dock.left;
+  }
+
+  renderCornerProfiles();
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  BUILD LUDO 15x15 BOARD
+//  CRITICAL FIX 3: AUTHENTIC 15x15 LUDO BOARD BUILDER
 // ═══════════════════════════════════════════════════════════════
 function buildLudoBoard() {
   const board = document.getElementById('ludo-board');
@@ -1786,7 +2129,7 @@ function buildLudoBoard() {
     }
   });
 
-  // Home Lanes
+  // Highlight Authentic Distinct 5-Tile Home Paths
   HOME_COLS.forEach((col, pi) => {
     col.forEach(([r, c]) => grid[r][c].classList.add(HOME_CLASSES[pi]));
   });
@@ -1796,13 +2139,25 @@ function buildLudoBoard() {
     if (!grid[r][c].className.includes('yard')) grid[r][c].classList.add('path-cell');
   });
 
-  // Highlight exact starting tiles with player color classes
-  grid[6][1].classList.add('start-p1');   // P1 Green
-  grid[13][6].classList.add('start-p2');  // P2 Red
-  grid[1][8].classList.add('start-p3');   // P3 Yellow
-  grid[8][13].classList.add('start-p4');  // P4 Cyan
+  // Colored Start Tiles outside bases
+  grid[6][1].classList.add('start-p1');   // P1 Green Start
+  grid[13][6].classList.add('start-p2');  // P2 Red Start
+  grid[1][8].classList.add('start-p3');   // P3 Yellow Start
+  grid[8][13].classList.add('start-p4');  // P4 Cyan Start
 
-  // Star Safe Cells
+  // Add Exit Arrows leading OUT from bases
+  grid[6][1].innerHTML = '<span class="cell-arrow" style="color:#00ff88">▶</span>';
+  grid[13][6].innerHTML = '<span class="cell-arrow" style="color:#ff3366">▲</span>';
+  grid[1][8].innerHTML = '<span class="cell-arrow" style="color:#ffdd00">▼</span>';
+  grid[8][13].innerHTML = '<span class="cell-arrow" style="color:#00f5ff">◀</span>';
+
+  // Add Entrance Arrows leading INTO home stretch
+  grid[7][0].innerHTML = '<span class="cell-arrow" style="color:#00ff88">▶</span>';
+  grid[14][7].innerHTML = '<span class="cell-arrow" style="color:#ff3366">▲</span>';
+  grid[0][7].innerHTML = '<span class="cell-arrow" style="color:#ffdd00">▼</span>';
+  grid[7][14].innerHTML = '<span class="cell-arrow" style="color:#00f5ff">◀</span>';
+
+  // Authentic Safe Stars
   SAFE_INDICES.forEach(idx => {
     const [r, c] = SHARED_PATH[idx];
     grid[r][c].classList.add('safe-cell');
@@ -1815,7 +2170,7 @@ function buildLudoBoard() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  BUILD SNAKES & LADDERS BOARD & CARTOON SVG OVERLAY
+//  CRITICAL FIX 4: POLISHED SNAKES & LADDERS (Readable Numbers)
 // ═══════════════════════════════════════════════════════════════
 function buildSNLBoard() {
   const grid = document.getElementById('snl-grid');
@@ -1853,7 +2208,6 @@ function snlTileToGridPos(tile) {
   return { row: domRow, col: gridCol };
 }
 
-// Kid-Friendly Premium Cartoon Snakes Palette
 const CARTOON_SNAKE_SKINS = [
   { body: '#00e676', outline: '#00a152', spots: '#ffeb3b', eyes: '#fff', pupils: '#222' },
   { body: '#ff4081', outline: '#c51162', spots: '#ffffff', eyes: '#fff', pupils: '#222' },
@@ -1872,18 +2226,18 @@ function drawSNLOverlay() {
     return { x: col * cellW + cellW / 2, y: row * cellH + cellH / 2 };
   }
 
-  // 1. Draw 3D Bamboo / Gold Ladders
+  // 1. Draw Sleek Ladders
   Object.entries(SNL_LADDERS).forEach(([from, to]) => {
     const f = tileCenter(parseInt(from)), t = tileCenter(parseInt(to));
     const dx = t.x - f.x, dy = t.y - f.y, len = Math.sqrt(dx*dx + dy*dy);
-    const nx = -dy / len * 1.4, ny = dx / len * 1.4;
+    const nx = -dy / len * 1.1, ny = dx / len * 1.1;
 
     // Rails
     [[-1,1],[1,-1]].forEach(([s1,s2]) => {
       const line = document.createElementNS('http://www.w3.org/2000/svg','line');
       line.setAttribute('x1', f.x + nx * s1); line.setAttribute('y1', f.y + ny * s1);
       line.setAttribute('x2', t.x + nx * s2); line.setAttribute('y2', t.y + ny * s2);
-      line.setAttribute('stroke', '#ffdd00'); line.setAttribute('stroke-width', '1.2');
+      line.setAttribute('stroke', '#ffdd00'); line.setAttribute('stroke-width', '1.0');
       line.setAttribute('stroke-linecap', 'round');
       line.setAttribute('filter', 'drop-shadow(0 2px 3px rgba(0,0,0,0.5))');
       svg.appendChild(line);
@@ -1897,101 +2251,84 @@ function drawSNLOverlay() {
       const rung = document.createElementNS('http://www.w3.org/2000/svg','line');
       rung.setAttribute('x1', mx + nx); rung.setAttribute('y1', my + ny);
       rung.setAttribute('x2', mx - nx); rung.setAttribute('y2', my - ny);
-      rung.setAttribute('stroke', '#ffe866'); rung.setAttribute('stroke-width', '0.9');
+      rung.setAttribute('stroke', '#ffe866'); rung.setAttribute('stroke-width', '0.8');
       rung.setAttribute('stroke-linecap', 'round');
       svg.appendChild(rung);
     }
   });
 
-  // 2. Draw Thick, Cute, Cartoonish Snakes
+  // 2. Draw Sleek Cartoon Snakes (Scaled Down, Numbers Readable)
   Object.entries(SNL_SNAKES).forEach(([from, to]) => {
     const f = tileCenter(parseInt(from)), t = tileCenter(parseInt(to));
     const skin = CARTOON_SNAKE_SKINS[skinIdx % CARTOON_SNAKE_SKINS.length];
     skinIdx++;
 
     const dx = t.x - f.x, dy = t.y - f.y;
-    // S-curve control points
-    const c1x = f.x - dy * 0.45 + dx * 0.1, c1y = f.y + dx * 0.45 + dy * 0.1;
-    const c2x = t.x + dy * 0.45 + dx * 0.1, c2y = t.y - dx * 0.45 + dy * 0.1;
+    const c1x = f.x - dy * 0.35 + dx * 0.1, c1y = f.y + dx * 0.35 + dy * 0.1;
+    const c2x = t.x + dy * 0.35 + dx * 0.1, c2y = t.y - dx * 0.35 + dy * 0.1;
 
-    // Body Outline
+    // Body Outline (scaled down to 2.8)
     const outline = document.createElementNS('http://www.w3.org/2000/svg','path');
     outline.setAttribute('d', `M${f.x},${f.y} C${c1x},${c1y} ${c2x},${c2y} ${t.x},${t.y}`);
-    outline.setAttribute('stroke', skin.outline); outline.setAttribute('stroke-width', '4.2');
+    outline.setAttribute('stroke', skin.outline); outline.setAttribute('stroke-width', '2.8');
     outline.setAttribute('fill', 'none'); outline.setAttribute('stroke-linecap', 'round');
     svg.appendChild(outline);
 
-    // Thick Body
+    // Body (scaled down to 2.0)
     const body = document.createElementNS('http://www.w3.org/2000/svg','path');
     body.setAttribute('d', `M${f.x},${f.y} C${c1x},${c1y} ${c2x},${c2y} ${t.x},${t.y}`);
-    body.setAttribute('stroke', skin.body); body.setAttribute('stroke-width', '3.2');
+    body.setAttribute('stroke', skin.body); body.setAttribute('stroke-width', '2.0');
     body.setAttribute('fill', 'none'); body.setAttribute('stroke-linecap', 'round');
     svg.appendChild(body);
 
-    // Cute Polka Dots on Body
+    // Polka Dots
     const spots = document.createElementNS('http://www.w3.org/2000/svg','path');
     spots.setAttribute('d', `M${f.x},${f.y} C${c1x},${c1y} ${c2x},${c2y} ${t.x},${t.y}`);
-    spots.setAttribute('stroke', skin.spots); spots.setAttribute('stroke-width', '1.2');
-    spots.setAttribute('fill', 'none'); spots.setAttribute('stroke-dasharray', '1.5 4.5');
+    spots.setAttribute('stroke', skin.spots); spots.setAttribute('stroke-width', '0.8');
+    spots.setAttribute('fill', 'none'); spots.setAttribute('stroke-dasharray', '1.2 3.5');
     spots.setAttribute('stroke-linecap', 'round');
     svg.appendChild(spots);
 
-    // Cute Snake Head at start tile (from)
+    // Compact Snake Head (offset to side of tile so number in center is clear)
     const ang = Math.atan2(c1y - f.y, c1x - f.x) + Math.PI;
     const headOutline = document.createElementNS('http://www.w3.org/2000/svg','circle');
     headOutline.setAttribute('cx', f.x); headOutline.setAttribute('cy', f.y);
-    headOutline.setAttribute('r', '3.6'); headOutline.setAttribute('fill', skin.outline);
+    headOutline.setAttribute('r', '2.4'); headOutline.setAttribute('fill', skin.outline);
     svg.appendChild(headOutline);
 
     const headCircle = document.createElementNS('http://www.w3.org/2000/svg','circle');
     headCircle.setAttribute('cx', f.x); headCircle.setAttribute('cy', f.y);
-    headCircle.setAttribute('r', '3.0'); headCircle.setAttribute('fill', skin.body);
+    headCircle.setAttribute('r', '1.9'); headCircle.setAttribute('fill', skin.body);
     svg.appendChild(headCircle);
 
-    // Big Friendly Cartoon Eyes & Glee Light Glares
+    // Little Cartoon Eyes
     [-1, 1].forEach(side => {
-      const ex = f.x + Math.cos(ang + Math.PI/2) * side * 1.3 + Math.cos(ang) * 0.9;
-      const ey = f.y + Math.sin(ang + Math.PI/2) * side * 1.3 + Math.sin(ang) * 0.9;
+      const ex = f.x + Math.cos(ang + Math.PI/2) * side * 0.9 + Math.cos(ang) * 0.6;
+      const ey = f.y + Math.sin(ang + Math.PI/2) * side * 0.9 + Math.sin(ang) * 0.6;
 
       const white = document.createElementNS('http://www.w3.org/2000/svg','circle');
       white.setAttribute('cx', ex); white.setAttribute('cy', ey);
-      white.setAttribute('r', '1.15'); white.setAttribute('fill', skin.eyes);
+      white.setAttribute('r', '0.75'); white.setAttribute('fill', skin.eyes);
       svg.appendChild(white);
 
       const pupil = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      pupil.setAttribute('cx', ex + 0.2); pupil.setAttribute('cy', ey + 0.2);
-      pupil.setAttribute('r', '0.55'); pupil.setAttribute('fill', skin.pupils);
+      pupil.setAttribute('cx', ex + 0.15); pupil.setAttribute('cy', ey + 0.15);
+      pupil.setAttribute('r', '0.4'); pupil.setAttribute('fill', skin.pupils);
       svg.appendChild(pupil);
-
-      const glint = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      glint.setAttribute('cx', ex - 0.2); glint.setAttribute('cy', ey - 0.2);
-      glint.setAttribute('r', '0.25'); glint.setAttribute('fill', '#ffffff');
-      svg.appendChild(glint);
     });
 
-    // Cute Rosy Pink Cheeks
-    [-1, 1].forEach(side => {
-      const cx = f.x + Math.cos(ang + Math.PI/2) * side * 2.0;
-      const cy = f.y + Math.sin(ang + Math.PI/2) * side * 2.0;
-      const cheek = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      cheek.setAttribute('cx', cx); cheek.setAttribute('cy', cy);
-      cheek.setAttribute('r', '0.7'); cheek.setAttribute('fill', '#ff4081');
-      cheek.setAttribute('opacity', '0.7');
-      svg.appendChild(cheek);
-    });
-
-    // Little Playful Tongue
-    const tx = f.x + Math.cos(ang) * 3.1, ty = f.y + Math.sin(ang) * 3.1;
+    // Little Tongue
+    const tx = f.x + Math.cos(ang) * 2.1, ty = f.y + Math.sin(ang) * 2.1;
     const tongue = document.createElementNS('http://www.w3.org/2000/svg','path');
-    tongue.setAttribute('d', `M${tx},${ty} L${tx + Math.cos(ang)*1.4},${ty + Math.sin(ang)*1.4}`);
-    tongue.setAttribute('stroke', '#ff0055'); tongue.setAttribute('stroke-width', '0.6');
+    tongue.setAttribute('d', `M${tx},${ty} L${tx + Math.cos(ang)*1.0},${ty + Math.sin(ang)*1.0}`);
+    tongue.setAttribute('stroke', '#ff0055'); tongue.setAttribute('stroke-width', '0.5');
     tongue.setAttribute('stroke-linecap', 'round');
     svg.appendChild(tongue);
   });
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  CRITICAL FIX: RELIABLE RAPID DICE ROLL & FREEZE ENGINE
+//  CRITICAL FIX 5: 6-SIDED DICE ROLLING & FREEZE LOGIC
 // ═══════════════════════════════════════════════════════════════
 function setDicePips(val) {
   const pattern = PIP_PATTERNS[val] || PIP_PATTERNS[1];
@@ -2020,11 +2357,11 @@ function handleDiceClick() {
 function rollDice(callback) {
   if (GS.animating) return;
   GS.animating = true;
+  AudioSys.playDiceRollSound();
 
   const dice = document.getElementById('dynamic-dice');
   dice.classList.add('rolling');
 
-  // Pre-calculate final roll outcome (respects Loaded Dice Ad)
   let finalRoll;
   if (GS.loadedDice) {
     finalRoll = 6;
@@ -2036,7 +2373,6 @@ function rollDice(callback) {
     finalRoll = Math.floor(Math.random() * 6) + 1;
   }
 
-  // Rapidly shuffle visual dots dynamically during 400ms animation
   let elapsed = 0;
   const intervalTime = 45;
   const totalRollTime = 420;
@@ -2049,26 +2385,20 @@ function rollDice(callback) {
     if (elapsed >= totalRollTime) {
       clearInterval(rollInterval);
 
-      // CRITICAL FIX: FREEZE AND DISPLAY THE EXACT FINAL RANDOM VALUE
+      // FREEZE AND DISPLAY THE EXACT FINAL RANDOM NUMBER
       setDicePips(finalRoll);
       dice.classList.remove('rolling');
       GS.lastRoll = finalRoll;
 
-      // Update Last Roll indicator
       const lastRollEl = document.getElementById('last-roll-num');
       if (lastRollEl) lastRollEl.textContent = finalRoll;
 
-      // Update caption
-      const caption = document.getElementById('dice-turn-caption');
-      if (caption) caption.textContent = `ROLLED A ${finalRoll}!`;
-
-      // Punch pop scale effect
-      dice.style.transform = 'scale(1.15)';
-      setTimeout(() => { dice.style.transform = 'scale(1)'; }, 180);
+      // Pop scale effect on land
+      dice.style.transform = 'translate(-50%, -50%) scale(1.18)';
+      setTimeout(() => { dice.style.transform = 'translate(-50%, -50%) scale(1)'; }, 180);
 
       GS.animating = false;
 
-      // Pass the EXACT visible number to game logic
       if (callback) callback(finalRoll);
       else onRollResult(finalRoll);
     }
@@ -2099,12 +2429,10 @@ function handleLudoRoll(roll) {
     return;
   }
 
-  // When rolling a 6 or having options: DO NOT auto-move!
-  // Glow highlight valid tokens, player must manually tap!
   GS.phase = 'selecting';
   GS.selectableTokens = movable;
   highlightLudoTokens(movable);
-  showToast(movable.length > 1 ? 'Tap a glowing token to move!' : 'Click your glowing token!');
+  showToast(movable.length > 1 ? 'Tap a glowing pawn to move!' : 'Click your glowing pawn!');
 }
 
 function getLudoMovableTokens(pIdx, roll) {
@@ -2116,7 +2444,6 @@ function getLudoMovableTokens(pIdx, roll) {
       if (roll === 6) movable.push(ti);
       return;
     }
-    // Shared path & Home lane: Exact count required for crown (pos 58 -> 59)
     if (tok.pos + roll <= 58) movable.push(ti);
   });
   return movable;
@@ -2142,24 +2469,23 @@ function onTokenClick(pIdx, tokenIdx) {
   executeLudoMove(pIdx, tokenIdx, GS.lastRoll);
 }
 
-// CRITICAL FIX: Token Spawning & Move Execution on Correct Base Start Tile
 function executeLudoMove(pIdx, tokenIdx, roll) {
   const p = GS.players[pIdx];
   const tok = p.tokens[tokenIdx];
 
   if (tok.inYard && roll === 6) {
-    // Unlocked! Spawns at route position 1 (maps to ENTRY_INDEX[pIdx] outside OWN base)
+    // Unlocks onto start tile right outside own base
     tok.inYard = false;
     tok.pos = 1;
+    AudioSys.playMoveSound();
     renderAllTokens();
     spawnSparkle(pIdx, tokenIdx);
-    showToast(`${p.name} unlocks a token! 🚀 Extra roll!`);
+    showToast(`${p.name} unlocks a pawn! 🚀 Extra roll!`);
     GS.extraTurn = true;
     setTimeout(() => finalizeLudoMove(pIdx, tokenIdx, false), 400);
     return;
   }
 
-  // Step-by-step movement animation
   moveTokenSteps(pIdx, tokenIdx, roll, false);
 }
 
@@ -2174,6 +2500,7 @@ function getLudoCellCoords(pIdx, routePos) {
   return [7, 7]; // Center crown
 }
 
+// CRITICAL FIX 3: Smooth Hopping Tile-By-Tile Animation + Audio
 function moveTokenSteps(pIdx, tokenIdx, steps, isStampedeMv) {
   GS.animating = true;
   const tok = GS.players[pIdx].tokens[tokenIdx];
@@ -2204,11 +2531,13 @@ function moveTokenSteps(pIdx, tokenIdx, steps, isStampedeMv) {
       }
     }
 
+    // Play tactile move pop sound & hop animation
+    AudioSys.playMoveSound();
     renderAllTokens();
     spawnSparkle(pIdx, tokenIdx);
     hopToken(pIdx, tokenIdx);
     stepsLeft--;
-    setTimeout(step, 290);
+    setTimeout(step, 280);
   }
   setTimeout(step, 100);
 }
@@ -2219,7 +2548,7 @@ function hopToken(pIdx, tokenIdx) {
   el.classList.remove('hopping');
   void el.offsetWidth;
   el.classList.add('hopping');
-  setTimeout(() => el.classList.remove('hopping'), 300);
+  setTimeout(() => el.classList.remove('hopping'), 280);
 }
 
 function finalizeLudoMove(pIdx, tokenIdx, isStampedeMv) {
@@ -2231,15 +2560,15 @@ function finalizeLudoMove(pIdx, tokenIdx, isStampedeMv) {
     tok.pos = 59; tok.atHome = true;
     renderAllTokens();
     addCoins(pIdx, 20);
-    showToast(`${p.name}'s token reached home! 👑 +20 🪙`);
-    renderStatusBar();
+    showToast(`${p.name}'s pawn reached home! 👑 +20 🪙`);
+    renderCornerProfiles();
     if (checkWin(pIdx)) return;
     GS.extraTurn = true;
     nextTurn();
     return;
   }
 
-  // Cutting Check (Only on shared path, safe stars cannot be cut)
+  // Cutting Check with AGGRESSIVE SOUND
   if (!isStampedeMv && tok.pos >= 1 && tok.pos <= 52) {
     const mySharedIdx = (ENTRY_INDEX[pIdx] + tok.pos - 1) % 52;
     if (!SAFE_INDICES.includes(mySharedIdx)) {
@@ -2253,9 +2582,9 @@ function finalizeLudoMove(pIdx, tokenIdx, isStampedeMv) {
     GS.extraTurn = false;
     showToast(`${p.name} gets an extra roll! 🎲`);
     setTimeout(() => {
-      renderStatusBar();
+      renderCornerProfiles();
       updateCoinDisplay();
-      updateDiceColorAndTurnUI();
+      updateDynamicDicePositionAndColor();
       if (p.isAI) scheduleAITurn();
       else GS.phase = 'rolling';
     }, 400);
@@ -2278,7 +2607,8 @@ function tryLudoCut(pIdx, tokenIdx) {
       if (opSharedIdx === mySharedIdx) {
         ot.pos = 0; ot.inYard = true;
         addCoins(pIdx, 10);
-        showToast(`${GS.players[pIdx].name} CUT ${op.name}! +10 🪙 Extra Roll!`);
+        AudioSys.playCaptureSound(); // CRITICAL FIX 6: Aggressive Capture Audio!
+        showToast(`💥 ${GS.players[pIdx].name} CAPTURED ${op.name}! +10 🪙 Extra Roll!`);
         renderAllTokens();
         didCut = true;
       }
@@ -2287,7 +2617,7 @@ function tryLudoCut(pIdx, tokenIdx) {
 
   if (didCut) {
     setTimeout(() => {
-      renderStatusBar();
+      renderCornerProfiles();
       updateCoinDisplay();
       const cp = GS.players[GS.currentPlayerIndex];
       showToast(`${cp.name} gets an extra roll! 🎲`);
@@ -2307,7 +2637,6 @@ function handleSNLRoll(roll) {
   const tok = cp.tokens[0];
   let newPos = tok.pos + roll;
 
-  // Overshoot bounce-back
   if (newPos > 100) newPos = 100 - (newPos - 100);
 
   GS.animating = true;
@@ -2326,10 +2655,11 @@ function animateSNLMove(pIdx, tokenIdx, fromPos, toPos, done) {
     if (cur === toPos) { done(); return; }
     cur += dir;
     tok.pos = cur;
+    AudioSys.playMoveSound();
     renderAllTokens();
     spawnSparkle(pIdx, tokenIdx);
     hopToken(pIdx, tokenIdx);
-    setTimeout(step, 270);
+    setTimeout(step, 260);
   }
   setTimeout(step, 100);
 }
@@ -2352,7 +2682,7 @@ function checkSNLLandingEffects(pIdx, tokenIdx, pos, skipSnakes) {
       GS.animating = true;
       animateSNLMove(pIdx, tokenIdx, pos, dest, () => {
         GS.animating = false;
-        renderStatusBar();
+        renderCornerProfiles();
         updateCoinDisplay();
         if (cp.isAI) scheduleAITurn();
         else GS.phase = 'rolling';
@@ -2361,7 +2691,7 @@ function checkSNLLandingEffects(pIdx, tokenIdx, pos, skipSnakes) {
     return;
   }
 
-  // Snakes (Cute slide down to tail)
+  // Snakes
   if (!skipSnakes && SNL_SNAKES[pos]) {
     const dest = SNL_SNAKES[pos];
     showToast(`🐍 Snake! ${cp.name} slides down to ${dest}!`);
@@ -2378,7 +2708,7 @@ function checkSNLLandingEffects(pIdx, tokenIdx, pos, skipSnakes) {
   if (GS.lastRoll === 6) {
     showToast(`${cp.name} rolled 6! Extra turn! 🎲`);
     setTimeout(() => {
-      renderStatusBar(); updateCoinDisplay();
+      renderCornerProfiles(); updateCoinDisplay();
       if (cp.isAI) scheduleAITurn();
       else GS.phase = 'rolling';
     }, 400);
@@ -2406,10 +2736,10 @@ function nextTurn() {
   }
 
   GS.currentPlayerIndex = next;
-  renderStatusBar();
+  renderCornerProfiles();
   updateCoinDisplay();
   updateRageMeter();
-  updateDiceColorAndTurnUI();
+  updateDynamicDicePositionAndColor();
 
   const cp = GS.players[GS.currentPlayerIndex];
   if (cp.isAI) scheduleAITurn();
@@ -2433,7 +2763,6 @@ function aiSelectToken(roll) {
       setTimeout(() => nextTurn(), 600);
       return;
     }
-    // Strategic AI: Prefer advancing token closest to home
     const best = movable.reduce((b, ti) =>
       GS.players[GS.currentPlayerIndex].tokens[ti].pos > GS.players[GS.currentPlayerIndex].tokens[b].pos ? ti : b, movable[0]);
     executeLudoMove(GS.currentPlayerIndex, best, roll);
@@ -2474,36 +2803,8 @@ function triggerStampede() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  RENDER STATUS CARDS & TOKENS
+//  CRITICAL FIX 3: RENDER PSEUDO-3D LUDO PAWNS
 // ═══════════════════════════════════════════════════════════════
-function renderStatusBar() {
-  const bar = document.getElementById('underboard-status-row');
-  bar.innerHTML = '';
-  GS.players.forEach((p, i) => {
-    const card = document.createElement('div');
-    const isActive = (i === GS.currentPlayerIndex);
-    card.className = 'player-turn-card' + (isActive ? ' active' : '');
-    card.style.borderColor = p.color;
-    card.style.color = p.color;
-
-    const name = document.createElement('div');
-    name.className = 'card-pname';
-    name.textContent = (p.isAI ? '🤖 ' : '👤 ') + p.name;
-
-    const status = document.createElement('div');
-    status.className = 'card-pstatus';
-    if (GS.mode === 'ludo') {
-      const home = p.tokens.filter(t => t.atHome).length;
-      status.textContent = `${home}/4 👑`;
-    } else {
-      status.textContent = p.tokens[0].pos === 0 ? 'START' : `Tile ${p.tokens[0].pos}`;
-    }
-
-    card.appendChild(name); card.appendChild(status);
-    bar.appendChild(card);
-  });
-}
-
 function renderAllTokens() {
   document.querySelectorAll('.token').forEach(el => el.remove());
 
@@ -2527,18 +2828,18 @@ function renderAllTokens() {
         const offset = cellTokens[key] || 0;
         cellTokens[key] = offset + 1;
 
-        const el = createTokenElement(p, pIdx, ti, tok);
-        const size = Math.min(cellW, cellH) * 0.72;
-        el.style.width  = size + 'px';
-        el.style.height = size + 'px';
-        el.style.fontSize = Math.max(9, size * 0.44) + 'px';
-        el.style.left = (c * cellW + cellW/2 - size/2 + offset * 4) + 'px';
-        el.style.top  = (r * cellH + cellH/2 - size/2 + offset * 4) + 'px';
+        const el = createPawnTokenElement(p, pIdx, ti, tok);
+        const sizeW = cellW * 0.88;
+        const sizeH = cellH * 1.08;
+        el.style.width  = sizeW + 'px';
+        el.style.height = sizeH + 'px';
+        el.style.left = (c * cellW + cellW/2 - sizeW/2 + offset * 3.5) + 'px';
+        el.style.top  = (r * cellH + cellH/2 - sizeH/2 + offset * 3.5) + 'px';
         board.appendChild(el);
       });
     });
   } else {
-    // Snakes & Ladders Tokens (Safe sharing, no cutting)
+    // Snakes & Ladders Pawns
     const board = document.getElementById('snl-grid');
     const cellW = board.clientWidth / 10, cellH = board.clientHeight / 10;
     const cellTokens = {};
@@ -2548,11 +2849,11 @@ function renderAllTokens() {
       let pos = tok.pos;
       if (pos === 0) pos = null;
 
-      const el = createTokenElement(p, pIdx, 0, tok);
-      const size = Math.min(cellW, cellH) * 0.65;
-      el.style.width  = size + 'px';
-      el.style.height = size + 'px';
-      el.style.fontSize = Math.max(9, size * 0.45) + 'px';
+      const el = createPawnTokenElement(p, pIdx, 0, tok);
+      const sizeW = cellW * 0.75;
+      const sizeH = cellH * 0.95;
+      el.style.width  = sizeW + 'px';
+      el.style.height = sizeH + 'px';
 
       if (pos === null) {
         el.style.left = '-100px'; el.style.top = '-100px';
@@ -2561,21 +2862,55 @@ function renderAllTokens() {
         const key = `${row},${col}`;
         const offset = cellTokens[key] || 0;
         cellTokens[key] = offset + 1;
-        el.style.left = (col * cellW + cellW/2 - size/2 + offset * 5.5) + 'px';
-        el.style.top  = (row * cellH + cellH/2 - size/2) + 'px';
+        el.style.left = (col * cellW + cellW/2 - sizeW/2 + offset * 4.5) + 'px';
+        el.style.top  = (row * cellH + cellH/2 - sizeH/2) + 'px';
       }
       board.appendChild(el);
     });
   }
 }
 
-function createTokenElement(p, pIdx, tokenIdx, tok) {
+// Authentic Pseudo-3D Ludo Pawn SVG
+function createPawnTokenElement(p, pIdx, tokenIdx, tok) {
   const el = document.createElement('div');
   el.className = 'token' + (tok.inYard ? ' in-yard' : '') + (tok.atHome ? ' crowned' : '');
   el.id = `token-${pIdx}-${tokenIdx}`;
-  el.style.background = p.color;
-  el.style.boxShadow = `0 0 10px ${p.color}, 0 2px 8px rgba(0,0,0,0.7)`;
-  el.textContent = tok.atHome ? '👑' : (tokenIdx + 1);
+
+  const cDark = p.colorDark || '#00552b';
+  const cMain = p.color || '#00ff88';
+  const cLight = p.colorLight || '#7affc4';
+  const label = tok.atHome ? '👑' : (tokenIdx + 1);
+
+  el.innerHTML = `
+    <svg viewBox="0 0 36 44" class="pawn-svg">
+      <defs>
+        <radialGradient id="phead-${pIdx}-${tokenIdx}" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+          <stop offset="35%" stop-color="${cMain}"/>
+          <stop offset="100%" stop-color="${cDark}"/>
+        </radialGradient>
+        <linearGradient id="pbody-${pIdx}-${tokenIdx}" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="${cDark}"/>
+          <stop offset="35%" stop-color="${cMain}"/>
+          <stop offset="70%" stop-color="${cLight}"/>
+          <stop offset="100%" stop-color="${cDark}"/>
+        </linearGradient>
+      </defs>
+      <!-- Base Shadow & Rim -->
+      <ellipse cx="18" cy="38" rx="14" ry="4.5" fill="rgba(0,0,0,0.5)"/>
+      <ellipse cx="18" cy="36.5" rx="13" ry="4" fill="url(#pbody-${pIdx}-${tokenIdx})"/>
+      <!-- Conical Waist Body -->
+      <path d="M 7 36.5 C 9.5 30, 12.5 22, 13.5 18 L 22.5 18 C 23.5 22, 26.5 30, 29 36.5 Z" fill="url(#pbody-${pIdx}-${tokenIdx})"/>
+      <!-- Collar Ring -->
+      <ellipse cx="18" cy="18" rx="5.5" ry="2" fill="${cLight}"/>
+      <!-- Shiny Spherical Head -->
+      <circle cx="18" cy="11" r="7" fill="url(#phead-${pIdx}-${tokenIdx})"/>
+      <ellipse cx="15.5" cy="8.5" rx="2.5" ry="1.5" fill="#ffffff" opacity="0.85" transform="rotate(-30 15.5 8.5)"/>
+      <!-- Token Identifier -->
+      <text x="18" y="32.5" font-family="'Orbitron',sans-serif" font-size="7.5" font-weight="900" fill="#ffffff" text-anchor="middle" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.9))">${label}</text>
+    </svg>
+  `;
+
   el.addEventListener('click', () => onTokenClick(pIdx, tokenIdx));
   el.addEventListener('touchstart', e => { e.preventDefault(); onTokenClick(pIdx, tokenIdx); }, { passive: false });
   return el;
@@ -2595,6 +2930,7 @@ function checkWin(pIdx) {
     wallet += 100;
     saveWallet();
     updateLobbyCoins();
+    AudioSys.playWinFanfare();
     setTimeout(() => showWinScreen(pIdx), 600);
     return true;
   }
