@@ -31,11 +31,16 @@
 html, body {
   width: 100%; height: 100dvh;
   overflow: hidden;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  -webkit-overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
   background: var(--bg);
   color: #fff;
   font-family: system-ui, -apple-system, sans-serif;
   user-select: none;
-  touch-action: manipulation;
+  -webkit-user-select: none;
   transition: background 0.5s ease;
 }
 button {
@@ -132,10 +137,11 @@ button {
 }
 .screen.hidden { opacity: 0; pointer-events: none; }
 
-/* ─── SPLASH SCREEN ─── */
+/* ─── SPLASH SCREEN (2.5s Full-Screen Loading) ─── */
 #splash-screen {
-  background: var(--bg);
-  gap: 16px; z-index: 100;
+  background: radial-gradient(circle at 50% 45%, #121528 0%, #05060b 80%);
+  gap: 14px; z-index: 100;
+  padding: 24px;
 }
 #splash-logo {
   width: 120px; height: 120px;
@@ -154,17 +160,37 @@ button {
 }
 #splash-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(26px, 8vw, 42px);
+  font-size: clamp(28px, 8.5vw, 44px);
   font-weight: 900; letter-spacing: 4px;
   animation: textPulse 1.6s ease-in-out infinite;
+  text-align: center;
 }
 #splash-sub {
-  font-size: 12px; letter-spacing: 3px;
+  font-size: 11px; letter-spacing: 3px;
   color: rgba(255,255,255,0.6); text-transform: uppercase;
 }
 #splash-studio {
-  font-size: 10px; letter-spacing: 2px;
-  color: var(--neon); opacity: 0.8; margin-top: 6px;
+  font-size: 12px; letter-spacing: 2px;
+  color: var(--neon); opacity: 0.95; margin-top: 8px;
+  font-family: 'Orbitron', sans-serif; font-weight: 700;
+}
+#splash-loader {
+  width: 180px; height: 5px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px; overflow: hidden;
+  margin-top: 14px;
+  box-shadow: 0 0 10px rgba(0,245,255,0.25);
+}
+#splash-bar {
+  width: 0%; height: 100%;
+  background: linear-gradient(90deg, var(--neon), var(--purple), var(--green));
+  animation: splashBarFill 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes splashBarFill {
+  0% { width: 0%; }
+  45% { width: 60%; }
+  80% { width: 90%; }
+  100% { width: 100%; }
 }
 
 /* ─── LOBBY SCREEN (Fixed Bottom Padding so Start is never cut) ─── */
@@ -439,6 +465,23 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 .player-corner-card.active .corner-turn-tag { display: block; }
 
+/* DEDICATED PROFILE DICE DOCK (BESIDE ACTIVE PLAYER CARD, NEVER OVERLAPPING) */
+.profile-dice-dock {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 56px;
+  height: 52px;
+  padding: 0 4px;
+  transition: all 0.25s ease;
+}
+.profile-dice-dock.dock-left {
+  justify-content: flex-start;
+}
+.profile-dice-dock.dock-right {
+  justify-content: flex-end;
+}
+
 /* ─── MAIN ARENA & 1:1 PERFECT SQUARE BOARD CONTAINER ─── */
 #main-arena {
   flex: 1;
@@ -449,22 +492,93 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 }
 #board-container {
   position: relative;
-  aspect-ratio: 1 / 1 !important; /* CRITICAL FIX 2: Strict 1:1 Aspect Ratio */
+  aspect-ratio: 1 / 1 !important; /* Strict 1:1 Aspect Ratio */
   margin: 0 auto;
 }
 
-/* LUDO BOARD (15x15 Grid) */
+/* AUTHENTIC 15x15 LUDO BOARD GRID */
 #ludo-board {
   display: grid;
   grid-template-columns: repeat(15, 1fr);
   grid-template-rows: repeat(15, 1fr);
   width: 100%; height: 100%;
   aspect-ratio: 1 / 1 !important;
-  border: 2px solid var(--neon);
-  border-radius: 8px; overflow: hidden;
+  border: 2.5px solid var(--neon);
+  border-radius: 12px; overflow: hidden;
   box-shadow: 0 0 35px rgba(0,245,255,0.35);
-  background: #0d0f17;
+  background: #090b14;
+  position: relative;
 }
+
+/* 4 LARGE CORNER BASES (6x6 Cells Each) */
+.ludo-base {
+  position: relative;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 6px; z-index: 5;
+  box-shadow: inset 0 0 16px rgba(0,0,0,0.8);
+}
+.ludo-base.base-p1 {
+  grid-column: 1 / 7; grid-row: 1 / 7;
+  background: radial-gradient(circle at 30% 30%, rgba(0,255,136,0.35) 0%, rgba(0,255,136,0.12) 100%);
+  border: 2px solid #00ff88;
+}
+.ludo-base.base-p2 {
+  grid-column: 1 / 7; grid-row: 10 / 16;
+  background: radial-gradient(circle at 30% 70%, rgba(255,51,102,0.35) 0%, rgba(255,51,102,0.12) 100%);
+  border: 2px solid #ff3366;
+}
+.ludo-base.base-p3 {
+  grid-column: 10 / 16; grid-row: 1 / 7;
+  background: radial-gradient(circle at 70% 30%, rgba(255,221,0,0.35) 0%, rgba(255,221,0,0.12) 100%);
+  border: 2px solid #ffdd00;
+}
+.ludo-base.base-p4 {
+  grid-column: 10 / 16; grid-row: 10 / 16;
+  background: radial-gradient(circle at 70% 70%, rgba(0,245,255,0.35) 0%, rgba(0,245,255,0.12) 100%);
+  border: 2px solid #00f5ff;
+}
+.base-inner-circle {
+  width: 82%; height: 82%;
+  border-radius: 16px;
+  background: rgba(10,12,22,0.88);
+  border: 1.5px solid rgba(255,255,255,0.22);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px; padding: 10px;
+  align-items: center; justify-items: center;
+  box-shadow: inset 0 0 14px rgba(0,0,0,0.9);
+}
+.base-socket {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.25) 0%, rgba(0,0,0,0.8) 100%);
+  border: 2px solid currentColor;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 0 8px currentColor;
+  pointer-events: none;
+}
+
+/* 3x3 CENTER CROWN FINISH */
+.ludo-center-crown {
+  grid-column: 7 / 10; grid-row: 7 / 10;
+  position: relative; overflow: hidden;
+  background: #090b14;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 6;
+}
+.ludo-center-svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+.center-crown-icon {
+  position: relative; z-index: 2; font-size: 20px;
+  filter: drop-shadow(0 0 8px #ffdd00);
+  animation: textPulse 2s ease-in-out infinite;
+}
+
+/* 3-TILE WIDE CROSS PATH CELLS */
 .ludo-cell {
   position: relative;
   display: flex; align-items: center; justify-content: center;
@@ -472,11 +586,19 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   font-size: 9px; overflow: hidden;
   aspect-ratio: 1 / 1 !important;
 }
+.ludo-cell.path-cell { background: rgba(255,255,255,0.04); }
+
+/* AUTHENTIC SAFE ZONES (STARS) */
+.ludo-cell.safe-cell {
+  background: radial-gradient(circle, rgba(255,221,0,0.25) 0%, rgba(255,255,255,0.04) 100%) !important;
+  border-color: rgba(255,221,0,0.4) !important;
+}
 .ludo-cell.safe-cell::after {
-  content: '⭐'; font-size: 9px; pointer-events: none; opacity: 0.95;
+  content: '⭐'; font-size: 10px; pointer-events: none; opacity: 0.95;
+  filter: drop-shadow(0 0 4px #ffdd00);
 }
 
-/* CRITICAL FIX 3: Authentic Start Tiles & Home Path Highlights */
+/* START TILES OUTSIDE BASES */
 .ludo-cell.start-p1 {
   background: rgba(0,255,136,0.35) !important;
   border: 1.5px solid #00ff88 !important;
@@ -494,7 +616,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   border: 1.5px solid #00f5ff !important;
 }
 
-/* Distinct 5-Tile Home Path Leading to Center */
+/* DISTINCT 5-TILE HOME STRETCHES LEADING TO CENTER */
 .ludo-cell.home-p1 {
   background: linear-gradient(90deg, rgba(0,255,136,0.35), rgba(0,255,136,0.65)) !important;
   border: 1px solid rgba(0,255,136,0.5) !important;
@@ -512,18 +634,11 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   border: 1px solid rgba(0,245,255,0.5) !important;
 }
 
-/* Directional Arrow Overlay on Home Entrance & Exit */
+/* DIRECTIONAL ARROWS ON ENTRANCE & EXIT */
 .cell-arrow {
   position: absolute; pointer-events: none; font-size: 11px; font-weight: 900;
   opacity: 0.95; z-index: 5;
 }
-
-.ludo-cell.center-cell { font-size: 20px; }
-.ludo-cell.yard-p1 { background: rgba(0,255,136,0.22); }
-.ludo-cell.yard-p2 { background: rgba(255,51,102,0.22); }
-.ludo-cell.yard-p3 { background: rgba(255,221,0,0.22); }
-.ludo-cell.yard-p4 { background: rgba(0,245,255,0.22); }
-.ludo-cell.path-cell { background: rgba(255,255,255,0.04); }
 
 /* CRITICAL FIX 3: Standard Pseudo-3D Ludo Pawn Tokens */
 .token {
@@ -970,14 +1085,15 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   🐍<div class="easter-bubble">Wrong game! 🪜?</div>
 </div>
 
-<!-- ░░░ 1. SPLASH SCREEN ░░░ -->
+<!-- ░░░ 1. PREMIUM APP SPLASH SCREEN (2.5s) ░░░ -->
 <div class="screen" id="splash-screen">
   <img id="splash-logo" src="aetherbyte-logo.jpg" alt="AetherByte Studios"
        onerror="this.style.display='none';document.getElementById('splash-logo-fallback').style.display='flex'">
-  <div id="splash-logo-fallback" style="display:none">AetherByte Studios</div>
+  <div id="splash-logo-fallback" style="display:none">⚔️ AetherByte</div>
   <h1 id="splash-title">LUDO WARS</h1>
-  <p id="splash-sub">Ultimate Premium Edition</p>
-  <p id="splash-studio">by AetherByte Studios</p>
+  <p id="splash-sub">ULTIMATE PREMIUM EDITION</p>
+  <p id="splash-studio">Presented by AetherByte Studios</p>
+  <div id="splash-loader"><div id="splash-bar"></div></div>
 </div>
 
 <!-- ░░░ 2. PRE-MATCH LOBBY SCREEN ░░░ -->
@@ -1074,7 +1190,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
     </div>
   </div>
 
-  <!-- CRITICAL FIX 1: TOP 2 CORNER PLAYER PROFILES (P1 Green TL & P3 Yellow TR) -->
+  <!-- CRITICAL FIX 1 & 5: TOP CORNER PLAYER PROFILES & DEDICATED DICE DOCK -->
   <div class="corner-profiles-row" id="top-profiles-row">
     <!-- P1 (Green, Top-Left) -->
     <div class="player-corner-card" id="corner-card-0" onclick="handleCornerCardClick(0)">
@@ -1084,6 +1200,21 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
         <div class="corner-status" id="cstatus-0">0/4 👑</div>
       </div>
       <div class="corner-turn-tag">ROLL!</div>
+    </div>
+
+    <!-- DEDICATED TOP DICE DOCK (Sits cleanly BESIDE P1 or P3 card) -->
+    <div id="top-dice-dock" class="profile-dice-dock dock-left">
+      <div id="dynamic-dice" onclick="handleDiceClick()" role="button" aria-label="Roll Dice">
+        <div class="pip hidden" id="dp1"></div>
+        <div class="pip hidden" id="dp2"></div>
+        <div class="pip hidden" id="dp3"></div>
+        <div class="pip hidden" id="dp4"></div>
+        <div class="pip hidden" id="dp5"></div>
+        <div class="pip hidden" id="dp6"></div>
+        <div class="pip hidden" id="dp7"></div>
+        <div class="pip hidden" id="dp8"></div>
+        <div class="pip hidden" id="dp9"></div>
+      </div>
     </div>
 
     <!-- P3 (Yellow, Top-Right) -->
@@ -1100,30 +1231,17 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   <!-- Main Game Arena (Strict 1:1 Square Board) -->
   <div id="main-arena">
     <div id="board-container">
-      <!-- Ludo Board (15x15) -->
+      <!-- Ludo Board (15x15 Standard Grid) -->
       <div id="ludo-board" style="display:none"></div>
       <!-- Snakes & Ladders Board (10x10) -->
       <div id="snl-board" style="display:none">
         <div id="snl-grid"></div>
         <svg id="snl-svg-overlay" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
       </div>
-
-      <!-- CRITICAL FIX 1 & 5: DYNAMICALLY POSITIONING 3D DICE -->
-      <div id="dynamic-dice" onclick="handleDiceClick()" role="button" aria-label="Roll Dice">
-        <div class="pip hidden" id="dp1"></div>
-        <div class="pip hidden" id="dp2"></div>
-        <div class="pip hidden" id="dp3"></div>
-        <div class="pip hidden" id="dp4"></div>
-        <div class="pip hidden" id="dp5"></div>
-        <div class="pip hidden" id="dp6"></div>
-        <div class="pip hidden" id="dp7"></div>
-        <div class="pip hidden" id="dp8"></div>
-        <div class="pip hidden" id="dp9"></div>
-      </div>
     </div>
   </div>
 
-  <!-- CRITICAL FIX 1: BOTTOM 2 CORNER PLAYER PROFILES (P2 Red BL & P4 Cyan BR) -->
+  <!-- CRITICAL FIX 1 & 5: BOTTOM CORNER PLAYER PROFILES & DEDICATED DICE DOCK -->
   <div class="corner-profiles-row" id="bottom-profiles-row">
     <!-- P2 (Red, Bottom-Left) -->
     <div class="player-corner-card" id="corner-card-1" onclick="handleCornerCardClick(1)">
@@ -1134,6 +1252,9 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
       </div>
       <div class="corner-turn-tag">ROLL!</div>
     </div>
+
+    <!-- DEDICATED BOTTOM DICE DOCK (Sits cleanly BESIDE P2 or P4 card) -->
+    <div id="bottom-dice-dock" class="profile-dice-dock dock-left"></div>
 
     <!-- P4 (Cyan, Bottom-Right) -->
     <div class="player-corner-card" id="corner-card-3" onclick="handleCornerCardClick(3)">
@@ -1657,10 +1778,10 @@ const SAFE_INDICES = [0, 8, 13, 21, 26, 34, 39, 47];
 
 // Yard Interior Token Spots (arranged around center of base)
 const YARD_SPOTS = [
-  [[1,1],[1,4],[4,1],[4,4]],     // P1 Green TL
-  [[10,1],[10,4],[13,1],[13,4]], // P2 Red BL
-  [[1,10],[1,13],[4,10],[4,13]], // P3 Yellow TR
-  [[10,10],[10,13],[13,10],[13,13]], // P4 Cyan BR
+  [[1.4, 1.4], [1.4, 3.6], [3.6, 1.4], [3.6, 3.6]],     // P1 Green TL
+  [[10.4, 1.4], [10.4, 3.6], [12.6, 1.4], [12.6, 3.6]], // P2 Red BL
+  [[1.4, 10.4], [1.4, 12.6], [3.6, 10.4], [3.6, 12.6]], // P3 Yellow TR
+  [[10.4, 10.4], [10.4, 12.6], [12.6, 10.4], [12.6, 12.6]], // P4 Cyan BR
 ];
 
 const YARD_RANGES = [
@@ -1757,9 +1878,15 @@ window.addEventListener('DOMContentLoaded', () => {
   if (audioBtn) audioBtn.textContent = AudioSys.isMuted ? '🔇' : '🔊';
 
   setTimeout(() => {
-    document.getElementById('splash-screen').classList.add('hidden');
-    document.getElementById('lobby-screen').classList.remove('hidden');
-  }, 1700);
+    const splash = document.getElementById('splash-screen');
+    splash.style.transition = 'opacity 0.5s ease';
+    splash.style.opacity = '0';
+    splash.style.pointerEvents = 'none';
+    setTimeout(() => {
+      splash.classList.add('hidden');
+      document.getElementById('lobby-screen').classList.remove('hidden');
+    }, 500);
+  }, 2500);
 });
 
 // ═══════════════════════════════════════════════════════════════
@@ -2286,19 +2413,34 @@ function updateDynamicDicePositionAndColor() {
 
   document.getElementById('last-roll-num').style.color = color;
 
-  // CRITICAL FIX: Conditional logic for dice placement & animations
+  // CRITICAL FIX 5: Sits clearly BESIDE active player card in Classic Ludo, or in bottom dock in SNL
   if (GS.mode === 'ludo') {
-    // Classic Ludo: Dynamically docked next to active player's corner base
     dice.classList.remove('snl-fixed');
-    const boardContainer = document.getElementById('board-container');
-    if (boardContainer && dice.parentElement !== boardContainer) {
-      boardContainer.appendChild(dice);
+    const topDock = document.getElementById('top-dice-dock');
+    const bottomDock = document.getElementById('bottom-dice-dock');
+
+    if (GS.currentPlayerIndex === 0) {
+      // P1 Green (Top-Left): Dock beside P1 card
+      if (topDock && dice.parentElement !== topDock) topDock.appendChild(dice);
+      if (topDock) topDock.className = 'profile-dice-dock dock-left';
+    } else if (GS.currentPlayerIndex === 2) {
+      // P3 Yellow (Top-Right): Dock beside P3 card
+      if (topDock && dice.parentElement !== topDock) topDock.appendChild(dice);
+      if (topDock) topDock.className = 'profile-dice-dock dock-right';
+    } else if (GS.currentPlayerIndex === 1) {
+      // P2 Red (Bottom-Left): Dock beside P2 card
+      if (bottomDock && dice.parentElement !== bottomDock) bottomDock.appendChild(dice);
+      if (bottomDock) bottomDock.className = 'profile-dice-dock dock-left';
+    } else if (GS.currentPlayerIndex === 3) {
+      // P4 Cyan (Bottom-Right): Dock beside P4 card
+      if (bottomDock && dice.parentElement !== bottomDock) bottomDock.appendChild(dice);
+      if (bottomDock) bottomDock.className = 'profile-dice-dock dock-right';
     }
-    const dock = CORNER_DICE_DOCKS[GS.currentPlayerIndex] || { top: '50%', left: '50%' };
-    dice.style.position = 'absolute';
-    dice.style.top  = dock.top;
-    dice.style.left = dock.left;
-    dice.style.transform = 'translate(-50%, -50%)';
+
+    dice.style.position = 'relative';
+    dice.style.top = '';
+    dice.style.left = '';
+    dice.style.transform = 'none';
     dice.style.animation = 'diceBreathAnim 2s ease-in-out infinite';
   } else {
     // Snakes & Ladders: Strictly FIXED in bottom UI dock (outside and completely below board)
@@ -2308,7 +2450,7 @@ function updateDynamicDicePositionAndColor() {
       snlDock.appendChild(dice);
     }
     dice.style.position = 'relative';
-    dice.style.top  = '';
+    dice.style.top = '';
     dice.style.left = '';
     dice.style.transform = 'none';
     dice.style.animation = 'none'; // Stop any up-and-down bouncing or breathing animations
@@ -2318,72 +2460,116 @@ function updateDynamicDicePositionAndColor() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  CRITICAL FIX 3: AUTHENTIC 15x15 LUDO BOARD BUILDER
+//  CRITICAL OVERHAUL 1: AUTHENTIC 15x15 STANDARD LUDO BOARD BUILDER
 // ═══════════════════════════════════════════════════════════════
 function buildLudoBoard() {
   const board = document.getElementById('ludo-board');
   board.innerHTML = '';
-  const grid = [];
+
+  // 1. Four Large 6x6 Corner Base Yards in Exact 4 Corners
+  const bases = [
+    { cls: 'base-p1', color: '#00ff88', rStart: 1, cStart: 1 },  // P1 Green TL
+    { cls: 'base-p2', color: '#ff3366', rStart: 10, cStart: 1 }, // P2 Red BL
+    { cls: 'base-p3', color: '#ffdd00', rStart: 1, cStart: 10 }, // P3 Yellow TR
+    { cls: 'base-p4', color: '#00f5ff', rStart: 10, cStart: 10 },// P4 Cyan BR
+  ];
+
+  bases.forEach(b => {
+    const baseEl = document.createElement('div');
+    baseEl.className = `ludo-base ${b.cls}`;
+    baseEl.style.gridRow = `${b.rStart} / ${b.rStart + 6}`;
+    baseEl.style.gridColumn = `${b.cStart} / ${b.cStart + 6}`;
+    baseEl.innerHTML = `
+      <div class="base-inner-circle">
+        <div class="base-socket" style="color:${b.color}"></div>
+        <div class="base-socket" style="color:${b.color}"></div>
+        <div class="base-socket" style="color:${b.color}"></div>
+        <div class="base-socket" style="color:${b.color}"></div>
+      </div>
+    `;
+    board.appendChild(baseEl);
+  });
+
+  // 2. Center 3x3 Finish Area with 4 Colored Triangles (Rows 7–9, Cols 7–9)
+  const centerEl = document.createElement('div');
+  centerEl.id = 'ludo-center-crown';
+  centerEl.className = 'ludo-center-crown';
+  centerEl.innerHTML = `
+    <svg class="ludo-center-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <polygon points="0,0 50,50 0,100" fill="#00ff88" opacity="0.45" stroke="#00ff88" stroke-width="1"/>
+      <polygon points="0,0 100,0 50,50" fill="#ffdd00" opacity="0.45" stroke="#ffdd00" stroke-width="1"/>
+      <polygon points="100,0 100,100 50,50" fill="#00f5ff" opacity="0.45" stroke="#00f5ff" stroke-width="1"/>
+      <polygon points="0,100 100,100 50,50" fill="#ff3366" opacity="0.45" stroke="#ff3366" stroke-width="1"/>
+    </svg>
+    <div class="center-crown-icon">👑</div>
+  `;
+  board.appendChild(centerEl);
+
+  // 3. Three-Tile Wide Cross Arms: 52 Path Tiles + 20 Home Stretch Tiles
+  const startTiles = {
+    '6,1':   { cls: 'start-p1', arrow: '▶', color: '#00ff88' },
+    '13,6':  { cls: 'start-p2', arrow: '▲', color: '#ff3366' },
+    '1,8':   { cls: 'start-p3', arrow: '▼', color: '#ffdd00' },
+    '8,13':  { cls: 'start-p4', arrow: '◀', color: '#00f5ff' },
+  };
+
+  const entranceArrows = {
+    '7,0':   { arrow: '▶', color: '#00ff88' },
+    '14,7':  { arrow: '▲', color: '#ff3366' },
+    '0,7':   { arrow: '▼', color: '#ffdd00' },
+    '7,14':  { arrow: '◀', color: '#00f5ff' },
+  };
+
+  // Safe Star Coordinates (Authentic Standard Ludo Positions)
+  const safeCoords = new Set(SAFE_INDICES.map(idx => `${SHARED_PATH[idx][0]},${SHARED_PATH[idx][1]}`));
+
+  // 5-Tile Colored Home Stretches
+  const homeCoords = {};
+  HOME_COLS.forEach((col, pi) => {
+    col.slice(0, 5).forEach(([r, c]) => {
+      homeCoords[`${r},${c}`] = HOME_CLASSES[pi];
+    });
+  });
 
   for (let r = 0; r < 15; r++) {
-    grid[r] = [];
     for (let c = 0; c < 15; c++) {
+      // Skip Corner Bases (6x6)
+      if ((r < 6 && c < 6) || (r >= 9 && c < 6) || (r < 6 && c >= 9) || (r >= 9 && c >= 9)) continue;
+      // Skip 3x3 Center Crown
+      if (r >= 6 && r <= 8 && c >= 6 && c <= 8) continue;
+
       const cell = document.createElement('div');
-      cell.className = 'ludo-cell';
-      cell.dataset.r = r; cell.dataset.c = c;
+      cell.className = 'ludo-cell path-cell';
       cell.id = `lc-${r}-${c}`;
-      grid[r][c] = cell;
+      cell.style.gridRow = `${r + 1}`;
+      cell.style.gridColumn = `${c + 1}`;
+
+      const key = `${r},${c}`;
+
+      // Colored Start Tiles
+      if (startTiles[key]) {
+        cell.classList.add(startTiles[key].cls);
+        cell.innerHTML = `<span class="cell-arrow" style="color:${startTiles[key].color}">${startTiles[key].arrow}</span>`;
+      }
+      // Home Entrance Directional Arrows
+      else if (entranceArrows[key]) {
+        cell.innerHTML = `<span class="cell-arrow" style="color:${entranceArrows[key].color}">${entranceArrows[key].arrow}</span>`;
+      }
+
+      // Authentic Safe Zones (Stars)
+      if (safeCoords.has(key)) {
+        cell.classList.add('safe-cell');
+        cell.classList.remove('path-cell');
+      }
+
+      // 5-Tile Home Stretches leading into center
+      if (homeCoords[key]) {
+        cell.classList.add(homeCoords[key]);
+      }
+
       board.appendChild(cell);
     }
   }
-
-  // Base Yard Corners
-  YARD_RANGES.forEach(({r, c, cls}) => {
-    for (let row = r[0]; row <= r[1]; row++) {
-      for (let col = c[0]; col <= c[1]; col++) {
-        grid[row][col].classList.add(cls);
-      }
-    }
-  });
-
-  // Highlight Authentic Distinct 5-Tile Home Paths
-  HOME_COLS.forEach((col, pi) => {
-    col.forEach(([r, c]) => grid[r][c].classList.add(HOME_CLASSES[pi]));
-  });
-
-  // Shared Path
-  SHARED_PATH.forEach(([r, c]) => {
-    if (!grid[r][c].className.includes('yard')) grid[r][c].classList.add('path-cell');
-  });
-
-  // Colored Start Tiles outside bases
-  grid[6][1].classList.add('start-p1');   // P1 Green Start
-  grid[13][6].classList.add('start-p2');  // P2 Red Start
-  grid[1][8].classList.add('start-p3');   // P3 Yellow Start
-  grid[8][13].classList.add('start-p4');  // P4 Cyan Start
-
-  // Add Exit Arrows leading OUT from bases
-  grid[6][1].innerHTML = '<span class="cell-arrow" style="color:#00ff88">▶</span>';
-  grid[13][6].innerHTML = '<span class="cell-arrow" style="color:#ff3366">▲</span>';
-  grid[1][8].innerHTML = '<span class="cell-arrow" style="color:#ffdd00">▼</span>';
-  grid[8][13].innerHTML = '<span class="cell-arrow" style="color:#00f5ff">◀</span>';
-
-  // Add Entrance Arrows leading INTO home stretch
-  grid[7][0].innerHTML = '<span class="cell-arrow" style="color:#00ff88">▶</span>';
-  grid[14][7].innerHTML = '<span class="cell-arrow" style="color:#ff3366">▲</span>';
-  grid[0][7].innerHTML = '<span class="cell-arrow" style="color:#ffdd00">▼</span>';
-  grid[7][14].innerHTML = '<span class="cell-arrow" style="color:#00f5ff">◀</span>';
-
-  // Authentic Safe Stars
-  SAFE_INDICES.forEach(idx => {
-    const [r, c] = SHARED_PATH[idx];
-    grid[r][c].classList.add('safe-cell');
-    grid[r][c].classList.remove('path-cell');
-  });
-
-  // Crown Center
-  grid[7][7].classList.add('center-cell');
-  grid[7][7].textContent = '👑';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3166,7 +3352,7 @@ function checkWin(pIdx) {
 
 function showWinScreen(pIdx) {
   const p = GS.players[pIdx];
-  document.getElementById('win-msg').textContent = `🎉 ${p.name} WINS! 🎉`;
+  document.getElementById('win-msg').innerHTML = `<span style="font-size:15px;color:#ffdd00;letter-spacing:4px;display:block;margin-bottom:4px">👑 VICTORY! 👑</span>${p.name} WINS!`;
   document.getElementById('win-msg').style.color = p.color;
   document.getElementById('win-coins').textContent = `Match Reward: +100 🪙 | Total Wallet: ${wallet}`;
   document.getElementById('win-screen').classList.add('open');
