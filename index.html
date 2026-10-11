@@ -576,6 +576,27 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   animation: dicePremiumGlow 1.2s ease-in-out infinite !important;
 }
 
+/* Snakes & Ladders: Strictly FIXED in bottom UI dock (Outside & Below Board) */
+#dynamic-dice.snl-fixed {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s !important;
+  animation: none !important; /* Stop breathing and up-and-down bouncing animations in SNL */
+  margin: 0 !important;
+  flex-shrink: 0;
+}
+#dynamic-dice.snl-fixed:active {
+  transform: scale(0.92) !important;
+}
+#dynamic-dice.snl-fixed.rolling {
+  animation: diceWobble 0.1s ease infinite !important;
+}
+#dynamic-dice.snl-fixed.premium-skin {
+  animation: dicePremiumGlow 1.2s ease-in-out infinite !important;
+}
+
 /* 9 PIPS: Real 6-Sided Recessed Pips */
 .pip {
   border-radius: 50%;
@@ -697,6 +718,23 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   animation: rageFlashBar 0.8s infinite;
 }
 #stampede-btn.visible { display: block; }
+
+/* Fixed Dice Dock in Bottom Controls for Snakes & Ladders Mode */
+#snl-dice-dock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  min-height: 58px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px dashed rgba(255,255,255,0.25);
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.4);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
 
 #lastroll-dock-col {
   display: flex; align-items: center; gap: 6px;
@@ -1140,6 +1178,9 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
         <button id="stampede-btn" onclick="triggerStampede()">💥 STAMPEDE! (+12)</button>
       </div>
 
+      <!-- CRITICAL FIX: Dedicated Fixed Dice Dock for Snakes & Ladders (Outside & Below Board) -->
+      <div id="snl-dice-dock" style="display:none"></div>
+
       <div id="lastroll-dock-col">
         <span class="lastroll-label">LAST ROLL:</span>
         <span id="last-roll-num">-</span>
@@ -1223,9 +1264,6 @@ class WebAudioEngine {
   constructor() {
     this.ctx = null;
     this.isMuted = localStorage.getItem('lw_muted') === 'true';
-    this.bgmOsc1 = null;
-    this.bgmOsc2 = null;
-    this.bgmGain = null;
     this.bgmTimer = null;
     this.bgmStep = 0;
   }
@@ -1240,6 +1278,9 @@ class WebAudioEngine {
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume();
     }
+    const btn = document.getElementById('audio-toggle-btn');
+    if (btn) btn.textContent = this.isMuted ? '🔇' : '🔊';
+
     if (!this.isMuted && !this.bgmTimer) {
       this.startBGM();
     }
@@ -1260,60 +1301,183 @@ class WebAudioEngine {
     return this.isMuted;
   }
 
-  // Tactile 'pop/click' sound on token tile hop
-  playMoveSound() {
+  // 1. Warm wooden Marimba / Kalimba note synthesis with mallet strike
+  playMarimbaNote(freq, dur = 0.20, vol = 0.045) {
     if (this.isMuted || !this.ctx) return;
     try {
+      const now = this.ctx.currentTime;
+
+      // Warm Sine fundamental
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'sine';
-      const now = this.ctx.currentTime;
-      osc.frequency.setValueAtTime(620, now);
-      osc.frequency.exponentialRampToValueAtTime(180, now + 0.07);
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+      osc.frequency.setValueAtTime(freq, now);
+
+      gain.gain.setValueAtTime(vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.08);
+      osc.stop(now + dur + 0.02);
+
+      // Mallet click overtone (3.8x harmonic with rapid 32ms decay)
+      const clickOsc = this.ctx.createOscillator();
+      const clickGain = this.ctx.createGain();
+      clickOsc.type = 'triangle';
+      clickOsc.frequency.setValueAtTime(freq * 3.8, now);
+      clickGain.gain.setValueAtTime(vol * 0.4, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.032);
+
+      clickOsc.connect(clickGain);
+      clickGain.connect(this.ctx.destination);
+      clickOsc.start(now);
+      clickOsc.stop(now + 0.04);
     } catch (e) {}
   }
 
-  // Aggressive 'strike/crunch' sound on token capture
+  // Soft wooden bass note
+  playWoodBass(freq, dur = 0.24, vol = 0.038) {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const filter = this.ctx.createBiquadFilter();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(320, now);
+
+      gain.gain.setValueAtTime(vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + dur + 0.02);
+    } catch (e) {}
+  }
+
+  // 2. Token Move Sound: Satisfying Soft Woodblock / Bubble Pop (~45ms)
+  playMoveSound() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const baseFreq = 780 + Math.random() * 80;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      // Quick pitch descent produces hollow pop
+      osc.frequency.setValueAtTime(baseFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.65, now + 0.045);
+
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.048);
+
+      // Hollow body resonance overtone
+      const res = this.ctx.createOscillator();
+      const resGain = this.ctx.createGain();
+      res.type = 'sine';
+      res.frequency.setValueAtTime(baseFreq * 1.5, now);
+      resGain.gain.setValueAtTime(0.08, now);
+      resGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      res.connect(resGain);
+      resGain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.05);
+      res.start(now);
+      res.stop(now + 0.03);
+    } catch (e) {}
+  }
+
+  // 3. Token Capture Sound: Playful Cartoon Boing / Slide
   playCaptureSound() {
     if (this.isMuted || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
-      // Sawtooth punch
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(360, now);
-      osc.frequency.exponentialRampToValueAtTime(45, now + 0.32);
-      gain.gain.setValueAtTime(0.45, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+
+      osc.type = 'triangle';
+      // Playful spring cartoon boing: pitch drops then bounces up and decays
+      osc.frequency.setValueAtTime(420, now);
+      osc.frequency.exponentialRampToValueAtTime(140, now + 0.09);
+      osc.frequency.exponentialRampToValueAtTime(360, now + 0.18);
+      osc.frequency.exponentialRampToValueAtTime(160, now + 0.36);
+
+      gain.gain.setValueAtTime(0.28, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.33);
+      osc.stop(now + 0.4);
 
-      // Distorted noise burst
-      const bufferSize = this.ctx.sampleRate * 0.15;
-      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-      const noise = this.ctx.createBufferSource();
-      noise.buffer = buffer;
-      const noiseGain = this.ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.35, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-      noise.connect(noiseGain);
-      noiseGain.connect(this.ctx.destination);
-      noise.start(now);
+      // Bubble pop accent at the start
+      const pop = this.ctx.createOscillator();
+      const popGain = this.ctx.createGain();
+      pop.type = 'sine';
+      pop.frequency.setValueAtTime(680, now);
+      pop.frequency.exponentialRampToValueAtTime(220, now + 0.05);
+      popGain.gain.setValueAtTime(0.18, now);
+      popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+      pop.connect(popGain);
+      popGain.connect(this.ctx.destination);
+      pop.start(now);
+      pop.stop(now + 0.06);
     } catch (e) {}
   }
 
-  // Dice tumble rattle sound
+  // 4. Cheerful Ascending Bell Chime (Rolling 6, Unlocking Pawn, Climbing Ladder, Center Crown)
+  playChimeSound() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      // Ascending pentatonic chime: C5, E5, G5, C6
+      const chimeNotes = [523.25, 659.25, 783.99, 1046.50];
+      chimeNotes.forEach((freq, idx) => {
+        const t = now + idx * 0.065;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t);
+
+        gain.gain.setValueAtTime(0.18, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+
+        // Bell shimmer overtone
+        const overtone = this.ctx.createOscillator();
+        const overGain = this.ctx.createGain();
+        overtone.type = 'sine';
+        overtone.frequency.setValueAtTime(freq * 2.76, t);
+        overGain.gain.setValueAtTime(0.04, t);
+        overGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        overtone.connect(overGain);
+        overGain.connect(this.ctx.destination);
+
+        osc.start(t);
+        osc.stop(t + 0.3);
+        overtone.start(t);
+        overtone.stop(t + 0.14);
+      });
+    } catch (e) {}
+  }
+
+  // 5. Dice Roll Tumble Rattle Sound
   playDiceRollSound() {
     if (this.isMuted || !this.ctx) return;
     try {
@@ -1322,9 +1486,9 @@ class WebAudioEngine {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'triangle';
-        const t = now + i * 0.05;
-        osc.frequency.setValueAtTime(320 + Math.random() * 300, t);
-        gain.gain.setValueAtTime(0.12, t);
+        const t = now + i * 0.055;
+        osc.frequency.setValueAtTime(320 + Math.random() * 260, t);
+        gain.gain.setValueAtTime(0.11, t);
         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
@@ -1334,39 +1498,61 @@ class WebAudioEngine {
     } catch (e) {}
   }
 
-  // Looped Futuristic Ambient Background Music
+  // 6. Looped Tropical Marimba / Kalimba BGM (Ludo King Style)
   startBGM() {
     if (this.isMuted || !this.ctx) return;
     this.stopBGM();
 
-    const notes = [261.63, 329.63, 392.00, 523.25, 493.88, 392.00, 329.63, 293.66]; // C-E-G-C-B-G-E-D
+    // 32-step cheerful tropical marimba pattern (Melody freq, Bass freq)
+    // Melody notes (C pentatonic): C5=523, D5=587, E5=659, G5=784, A5=880, C6=1046
+    // Bass notes: C3=130.8, G2=98.0, A2=110.0, F2=87.3
+    const PATTERN = [
+      { m: 659.25, b: 130.81 }, // Step 0: E5 + C3
+      { m: null,   b: null },
+      { m: 783.99, b: null },   // Step 2: G5
+      { m: 659.25, b: null },   // Step 3: E5
+      { m: 880.00, b: 98.00 },  // Step 4: A5 + G2
+      { m: 783.99, b: null },   // Step 5: G5
+      { m: 1046.5, b: null },   // Step 6: C6
+      { m: null,   b: null },
+      { m: 659.25, b: 110.00 }, // Step 8: E5 + A2
+      { m: 587.33, b: null },   // Step 9: D5
+      { m: 523.25, b: null },   // Step 10: C5
+      { m: 587.33, b: null },   // Step 11: D5
+      { m: 659.25, b: 87.31 },  // Step 12: E5 + F2
+      { m: null,   b: null },
+      { m: 783.99, b: null },   // Step 14: G5
+      { m: 587.33, b: null },   // Step 15: D5
+      { m: 1046.5, b: 130.81 }, // Step 16: C6 + C3
+      { m: 880.00, b: null },   // Step 17: A5
+      { m: 783.99, b: null },   // Step 18: G5
+      { m: 659.25, b: null },   // Step 19: E5
+      { m: 587.33, b: 98.00 },  // Step 20: D5 + G2
+      { m: 659.25, b: null },   // Step 21: E5
+      { m: 783.99, b: null },   // Step 22: G5
+      { m: 880.00, b: null },   // Step 23: A5
+      { m: 1046.5, b: 110.00 }, // Step 24: C6 + A2
+      { m: null,   b: null },
+      { m: 880.00, b: null },   // Step 26: A5
+      { m: 783.99, b: null },   // Step 27: G5
+      { m: 659.25, b: 87.31 },  // Step 28: E5 + F2
+      { m: 587.33, b: null },   // Step 29: D5
+      { m: 523.25, b: null },   // Step 30: C5
+      { m: null,   b: null },
+    ];
+
     this.bgmTimer = setInterval(() => {
       if (this.isMuted || !this.ctx) return;
-      try {
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        const freq = notes[this.bgmStep % notes.length];
-        this.bgmStep++;
+      const stepData = PATTERN[this.bgmStep % PATTERN.length];
+      this.bgmStep++;
 
-        osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.035, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-
-        // Lowpass filter for smooth ambient tone
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(900, now);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        osc.start(now);
-        osc.stop(now + 0.38);
-      } catch (e) {}
-    }, 380);
+      if (stepData.m) {
+        this.playMarimbaNote(stepData.m, 0.19, 0.04);
+      }
+      if (stepData.b) {
+        this.playWoodBass(stepData.b, 0.24, 0.035);
+      }
+    }, 180);
   }
 
   stopBGM() {
@@ -1376,23 +1562,34 @@ class WebAudioEngine {
     }
   }
 
+  // 7. Cheerful Win Fanfare
   playWinFanfare() {
     if (this.isMuted || !this.ctx) return;
     try {
-      const chords = [523.25, 659.25, 783.99, 1046.50];
+      const melody = [
+        { f: 523.25, d: 0.12 }, // C5
+        { f: 659.25, d: 0.12 }, // E5
+        { f: 783.99, d: 0.12 }, // G5
+        { f: 1046.50, d: 0.22 }, // C6
+        { f: 880.00, d: 0.14 }, // A5
+        { f: 1046.50, d: 0.14 }, // C6
+        { f: 1318.51, d: 0.45 }, // E6
+      ];
       const now = this.ctx.currentTime;
-      chords.forEach((freq, i) => {
+      let curT = now;
+      melody.forEach(item => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'triangle';
-        const t = now + i * 0.12;
-        osc.frequency.setValueAtTime(freq, t);
-        gain.gain.setValueAtTime(0.25, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+        osc.frequency.setValueAtTime(item.f, curT);
+        gain.gain.setValueAtTime(0.22, curT);
+        gain.gain.exponentialRampToValueAtTime(0.001, curT + item.d + 0.15);
+
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(t);
-        osc.stop(t + 0.65);
+        osc.start(curT);
+        osc.stop(curT + item.d + 0.18);
+        curT += item.d;
       });
     } catch (e) {}
   }
@@ -1970,11 +2167,15 @@ function startGame() {
   if (GS.mode === 'ludo') {
     document.getElementById('ludo-board').style.display = 'grid';
     document.getElementById('snl-board').style.display = 'none';
+    const snlDock = document.getElementById('snl-dice-dock');
+    if (snlDock) snlDock.style.display = 'none';
     buildLudoBoard();
     scheduleEasterEggSnake();
   } else {
     document.getElementById('ludo-board').style.display = 'none';
     document.getElementById('snl-board').style.display = 'block';
+    const snlDock = document.getElementById('snl-dice-dock');
+    if (snlDock) snlDock.style.display = 'flex';
     buildSNLBoard();
   }
 
@@ -2085,16 +2286,32 @@ function updateDynamicDicePositionAndColor() {
 
   document.getElementById('last-roll-num').style.color = color;
 
-  // CRITICAL FIX 1: Physically glide/dock next to active player's base/profile
+  // CRITICAL FIX: Conditional logic for dice placement & animations
   if (GS.mode === 'ludo') {
+    // Classic Ludo: Dynamically docked next to active player's corner base
+    dice.classList.remove('snl-fixed');
+    const boardContainer = document.getElementById('board-container');
+    if (boardContainer && dice.parentElement !== boardContainer) {
+      boardContainer.appendChild(dice);
+    }
     const dock = CORNER_DICE_DOCKS[GS.currentPlayerIndex] || { top: '50%', left: '50%' };
+    dice.style.position = 'absolute';
     dice.style.top  = dock.top;
     dice.style.left = dock.left;
+    dice.style.transform = 'translate(-50%, -50%)';
+    dice.style.animation = 'diceBreathAnim 2s ease-in-out infinite';
   } else {
-    // S&L: Central dock or active player dock
-    const dock = CORNER_DICE_DOCKS[GS.currentPlayerIndex] || { top: '50%', left: '50%' };
-    dice.style.top  = dock.top;
-    dice.style.left = dock.left;
+    // Snakes & Ladders: Strictly FIXED in bottom UI dock (outside and completely below board)
+    dice.classList.add('snl-fixed');
+    const snlDock = document.getElementById('snl-dice-dock');
+    if (snlDock && dice.parentElement !== snlDock) {
+      snlDock.appendChild(dice);
+    }
+    dice.style.position = 'relative';
+    dice.style.top  = '';
+    dice.style.left = '';
+    dice.style.transform = 'none';
+    dice.style.animation = 'none'; // Stop any up-and-down bouncing or breathing animations
   }
 
   renderCornerProfiles();
@@ -2394,8 +2611,13 @@ function rollDice(callback) {
       if (lastRollEl) lastRollEl.textContent = finalRoll;
 
       // Pop scale effect on land
-      dice.style.transform = 'translate(-50%, -50%) scale(1.18)';
-      setTimeout(() => { dice.style.transform = 'translate(-50%, -50%) scale(1)'; }, 180);
+      if (GS.mode === 'ludo') {
+        dice.style.transform = 'translate(-50%, -50%) scale(1.18)';
+        setTimeout(() => { dice.style.transform = 'translate(-50%, -50%) scale(1)'; }, 180);
+      } else {
+        dice.style.transform = 'scale(1.15)';
+        setTimeout(() => { dice.style.transform = 'none'; }, 180);
+      }
 
       GS.animating = false;
 
@@ -2407,7 +2629,10 @@ function rollDice(callback) {
 
 function onRollResult(roll) {
   const cp = GS.players[GS.currentPlayerIndex];
-  if (roll === 6) addCoins(GS.currentPlayerIndex, 5);
+  if (roll === 6) {
+    addCoins(GS.currentPlayerIndex, 5);
+    AudioSys.playChimeSound();
+  }
 
   cp.rageMeter = Math.min(100, cp.rageMeter + 3);
   updateRageMeter();
@@ -2477,7 +2702,7 @@ function executeLudoMove(pIdx, tokenIdx, roll) {
     // Unlocks onto start tile right outside own base
     tok.inYard = false;
     tok.pos = 1;
-    AudioSys.playMoveSound();
+    AudioSys.playChimeSound();
     renderAllTokens();
     spawnSparkle(pIdx, tokenIdx);
     showToast(`${p.name} unlocks a pawn! 🚀 Extra roll!`);
@@ -2560,6 +2785,7 @@ function finalizeLudoMove(pIdx, tokenIdx, isStampedeMv) {
     tok.pos = 59; tok.atHome = true;
     renderAllTokens();
     addCoins(pIdx, 20);
+    AudioSys.playChimeSound();
     showToast(`${p.name}'s pawn reached home! 👑 +20 🪙`);
     renderCornerProfiles();
     if (checkWin(pIdx)) return;
@@ -2676,6 +2902,7 @@ function checkSNLLandingEffects(pIdx, tokenIdx, pos, skipSnakes) {
   // Ladders (+25 Coins & Extra Turn)
   if (SNL_LADDERS[pos]) {
     const dest = SNL_LADDERS[pos];
+    AudioSys.playChimeSound();
     showToast(`🪜 Ladder! ${cp.name} climbs to ${dest}! +25 🪙 Extra roll!`);
     addCoins(pIdx, 25);
     setTimeout(() => {
@@ -3041,6 +3268,8 @@ function goToLobby() {
   document.getElementById('confetti-container').innerHTML = '';
   document.getElementById('game-screen').classList.add('hidden');
   document.getElementById('lobby-screen').classList.remove('hidden');
+  const snlDock = document.getElementById('snl-dice-dock');
+  if (snlDock) snlDock.style.display = 'none';
   GS.phase = 'rolling'; GS.animating = false;
   updateLobbyCoins();
 }
