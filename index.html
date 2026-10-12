@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>LUDO WARS – Ultimate Premium Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
 /* ════════════════════════════════════════════════════
    1. RESET & CORE MOBILE LAYOUT (100dvh, NO SCROLL)
@@ -68,11 +69,18 @@ button {
   100% { opacity: 0; transform: scale(2.4) translate(-50%,-50%); }
 }
 @keyframes diceWobble {
-  0% { transform: rotate(0deg) scale(0.95); }
-  25% { transform: rotate(-25deg) scale(1.12); }
-  50% { transform: rotate(20deg) scale(0.95); }
-  75% { transform: rotate(-15deg) scale(1.08); }
-  100% { transform: rotate(0deg) scale(1); }
+  0% { transform: translate(-50%, -50%) translateY(0px) rotate(0deg) scale(0.96); }
+  25% { transform: translate(-50%, -50%) translateY(-2px) rotate(-12deg) scale(1.04); }
+  50% { transform: translate(-50%, -50%) translateY(2px) rotate(12deg) scale(0.96); }
+  75% { transform: translate(-50%, -50%) translateY(-1px) rotate(-8deg) scale(1.02); }
+  100% { transform: translate(-50%, -50%) translateY(0px) rotate(0deg) scale(1); }
+}
+@keyframes diceWobbleFixed {
+  0% { transform: translateY(0px) rotate(0deg) scale(0.96); }
+  25% { transform: translateY(-2px) rotate(-12deg) scale(1.04); }
+  50% { transform: translateY(2px) rotate(12deg) scale(0.96); }
+  75% { transform: translateY(-1px) rotate(-8deg) scale(1.02); }
+  100% { transform: translateY(0px) rotate(0deg) scale(1); }
 }
 @keyframes diceBreathAnim {
   0%,100% { transform: scale(1); box-shadow: 0 0 16px var(--dice-color); }
@@ -640,25 +648,24 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   opacity: 0.95; z-index: 5;
 }
 
-/* CRITICAL FIX 3: Standard Pseudo-3D Ludo Pawn Tokens */
+/* CRITICAL FIX 3: Standard Pseudo-3D Ludo Pawn Tokens (Hardware-Accelerated Gliding) */
 .token {
   position: absolute;
+  top: 0; left: 0;
   cursor: pointer;
   z-index: 40; pointer-events: auto;
-  transition: left 0.22s cubic-bezier(0.25, 1, 0.5, 1),
-              top 0.22s cubic-bezier(0.25, 1, 0.5, 1),
-              transform 0.15s ease;
+  will-change: transform;
+  transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1);
   filter: drop-shadow(0 4px 6px rgba(0,0,0,0.7));
 }
-.token:active { transform: scale(0.9) !important; }
+.token:active { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.9)) brightness(0.9); }
 .token.in-yard { opacity: 0.88; }
 .token.crowned { opacity: 1; }
 .token.selectable {
   cursor: pointer; z-index: 55;
   animation: glowBorderPulse 0.75s ease-in-out infinite;
-  transform: scale(1.22);
 }
-.token.hopping { animation: tokenHopAnim 0.28s ease; }
+.token.hopping .pawn-svg { animation: tokenHopAnim 0.28s ease; }
 .pawn-svg { width: 100%; height: 100%; display: block; }
 
 /* ─── CRITICAL FIX 1 & 5: DYNAMICALLY POSITIONING 3D DICE ─── */
@@ -706,7 +713,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   transform: scale(0.92) !important;
 }
 #dynamic-dice.snl-fixed.rolling {
-  animation: diceWobble 0.1s ease infinite !important;
+  animation: diceWobbleFixed 0.1s ease infinite !important;
 }
 #dynamic-dice.snl-fixed.premium-skin {
   animation: dicePremiumGlow 1.2s ease-in-out infinite !important;
@@ -1041,6 +1048,132 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   background: linear-gradient(135deg, var(--neon), var(--purple));
   color: #000; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px;
 }
+
+/* ════════════════════════════════════════════════════
+   11. MULTI-RANK FINISH BANNER, YOU LOSE & DAILY REWARD
+════════════════════════════════════════════════════ */
+#finish-banner {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%);
+  background: rgba(13, 16, 32, 0.95);
+  border: 2px solid var(--neon);
+  box-shadow: 0 0 30px rgba(0, 245, 255, 0.5), inset 0 0 15px rgba(0, 245, 255, 0.2);
+  border-radius: 18px; padding: 14px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  z-index: 550; max-width: 90vw; width: 330px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+#finish-banner.open {
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+.finish-rank-badge {
+  font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 900;
+  letter-spacing: 2px; color: var(--yellow); text-transform: uppercase;
+}
+.finish-title {
+  font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900;
+  text-shadow: 0 0 12px var(--neon); color: #fff;
+}
+.finish-reward {
+  font-size: 13px; font-weight: 700; color: var(--green); font-family: 'Orbitron', sans-serif;
+}
+.finish-btn-row {
+  display: flex; gap: 8px; width: 100%; margin-top: 4px;
+}
+.finish-btn {
+  flex: 1; min-height: 36px; border-radius: 8px; font-size: 10px;
+  font-family: 'Orbitron', sans-serif; font-weight: 800; cursor: pointer;
+}
+.finish-btn-primary {
+  background: linear-gradient(135deg, var(--neon), var(--purple)); color: #000;
+}
+.finish-btn-sec {
+  background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);
+}
+
+#lose-screen {
+  position: fixed; inset: 0; background: rgba(10, 2, 4, 0.94);
+  z-index: 500; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s;
+  padding: 20px;
+}
+#lose-screen.open { opacity: 1; pointer-events: auto; }
+.lose-skull { font-size: 64px; filter: drop-shadow(0 0 25px rgba(255, 51, 102, 0.8)); }
+.lose-title {
+  font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 900;
+  color: var(--red); text-shadow: 0 0 25px var(--red); letter-spacing: 3px;
+}
+.lose-desc {
+  font-size: 12px; color: rgba(255,255,255,0.7); text-align: center; max-width: 290px;
+}
+
+.match-podium-box {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 14px; padding: 12px 16px; width: 100%; max-width: 320px;
+  display: flex; flex-direction: column; gap: 8px; margin: 6px 0;
+}
+.podium-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px; border-radius: 8px; background: rgba(0,0,0,0.3);
+  font-family: 'Orbitron', sans-serif; font-size: 11px;
+}
+.podium-rank-1 { border-left: 3px solid #ffdd00; color: #ffdd00; }
+.podium-rank-2 { border-left: 3px solid #c0c0c0; color: #e0e0e0; }
+.podium-rank-3 { border-left: 3px solid #cd7f32; color: #cd7f32; }
+.podium-rank-lose { border-left: 3px solid var(--red); color: var(--red); }
+
+#daily-reward-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+  z-index: 650; display: flex; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.35s;
+}
+#daily-reward-modal.open { opacity: 1; pointer-events: auto; }
+.daily-reward-card {
+  background: linear-gradient(135deg, #0e122b, #1b0a2a);
+  border: 2px solid var(--yellow);
+  box-shadow: 0 0 35px rgba(255, 221, 0, 0.4), inset 0 0 15px rgba(255, 221, 0, 0.15);
+  border-radius: 20px; padding: 24px; max-width: 320px; width: 100%;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+
+/* ════════════════════════════════════════════════════
+   12. TOKEN / PAWN SELECTION MODAL (GOOGLE ANTIGRAVITY)
+════════════════════════════════════════════════════ */
+#token-select-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+  z-index: 850; display: flex; align-items: center; justify-content: center;
+  padding: 18px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+#token-select-modal.open { opacity: 1; pointer-events: auto; }
+.token-select-card {
+  background: #0d0f1e; border: 2px solid var(--neon);
+  box-shadow: 0 0 35px rgba(0,245,255,0.45), inset 0 0 15px rgba(0,245,255,0.15);
+  border-radius: 20px; padding: 22px; max-width: 340px; width: 100%;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.token-skins-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; margin: 16px 0;
+}
+.token-skin-option {
+  background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 12px; padding: 12px 8px; cursor: pointer; transition: all 0.2s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.token-skin-option.active {
+  border-color: var(--neon); background: rgba(0,245,255,0.18);
+  box-shadow: 0 0 16px rgba(0,245,255,0.4); transform: scale(1.03);
+}
+.token-skin-icon { font-size: 26px; }
+.token-skin-name { font-family: 'Orbitron', sans-serif; font-size: 9.5px; font-weight: 800; color: #fff; }
+.token-skin-desc { font-size: 7.5px; color: rgba(255,255,255,0.6); }
+
+.trial-theme-btn {
+  background: linear-gradient(135deg, #ff8800, #ff0055);
+  color: #fff;
+}
 #confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 399; overflow: hidden; }
 .confetti-piece {
   position: absolute; top: -20px; width: 8px; height: 14px; border-radius: 2px;
@@ -1167,6 +1300,12 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
       <div id="player-list"></div>
     </div>
 
+    <!-- Pawn Skin Customization Button -->
+    <button onclick="openTokenSelectModal()" class="store-btn" style="background:linear-gradient(135deg,rgba(0,245,255,0.2),rgba(119,0,255,0.3));border:1.5px solid var(--neon);color:#fff;border-radius:12px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;">
+      <span>♟️</span>
+      <span>PAWN SKINS (Google Antigravity DB)</span>
+    </button>
+
     <!-- CRITICAL FIX 7: Generous bottom margin so Start Match is never cut off -->
     <button id="start-btn">⚡ START MATCH</button>
   </div>
@@ -1274,17 +1413,17 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
       <button class="ad-powerup-btn" id="ad-loaded-dice-btn" onclick="watchAdLoadedDice()">
         <span class="icon">🎯</span>
         <span>LOADED DICE</span>
-        <span class="tag">📺 Roll a 6</span>
+        <span class="tag">20🪙 / AD</span>
       </button>
       <button class="ad-powerup-btn" id="ad-rage-boost-btn" onclick="watchAdRageBoost()">
         <span class="icon">⚡</span>
         <span>RAGE BOOST</span>
-        <span class="tag">📺 100% Rage</span>
+        <span class="tag">20🪙 / AD</span>
       </button>
       <button class="ad-powerup-btn" id="ad-premium-dice-btn" onclick="watchAdPremiumDice()">
         <span class="icon">✨</span>
         <span>PREMIUM DICE</span>
-        <span class="tag">📺 Neon Skin</span>
+        <span class="tag">20🪙 / AD</span>
       </button>
     </div>
 
@@ -1365,12 +1504,55 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   </div>
 </div>
 
-<!-- ░░░ 8. WIN SCREEN ░░░ -->
+<!-- ░░░ 8. WIN SCREEN & MULTI-RANK FINISH MODALS ░░░ -->
+<div id="finish-banner">
+  <div style="font-size:42px" id="finish-rank-emoji">🥇</div>
+  <div class="finish-title" id="finish-rank-title">YOU FINISHED!</div>
+  <div class="finish-rank-badge" id="finish-rank-badge">1ST PLACE</div>
+  <div class="finish-reward" id="finish-rank-sub">+100 🪙 Reward</div>
+  <div class="finish-btn-row">
+    <button class="finish-btn finish-btn-primary" onclick="closeFinishBanner()">👀 KEEP WATCHING</button>
+    <button class="finish-btn finish-btn-sec" onclick="goToLobby()">🏠 LOBBY</button>
+  </div>
+</div>
+
+<div id="lose-screen">
+  <div class="lose-skull">💀</div>
+  <div class="lose-title">YOU LOSE</div>
+  <div class="lose-desc">All other players have successfully reached home! You finished in last place.</div>
+  <div id="lose-podium" style="width:100%;max-width:320px;"></div>
+  <button class="store-btn buy-theme-btn" style="width:200px;margin-top:10px;" onclick="goToLobby()">🔄 RETURN TO LOBBY</button>
+</div>
+
 <div id="win-screen">
   <div id="win-emoji">🏆</div>
   <div id="win-msg"></div>
+  <div id="win-podium" style="width:100%;max-width:320px;"></div>
   <div id="win-coins"></div>
-  <button id="play-again-btn" onclick="goToLobby()">🔄 PLAY AGAIN</button>
+  <button id="play-again-btn" onclick="goToLobby()">🔄 RETURN TO LOBBY</button>
+</div>
+
+<!-- ░░░ 8B. DAILY LOGIN REWARD MODAL ░░░ -->
+<div id="daily-reward-modal">
+  <div class="daily-reward-card">
+    <div style="font-size:52px;animation:pulseGlow 2s infinite">🎁</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--yellow);letter-spacing:2px;margin:10px 0 6px">DAILY LOGIN BONUS!</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:12px">Welcome back to LUDO WARS! Here is your daily reward:</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--green);margin-bottom:18px;text-shadow:0 0 12px var(--green)">+100 🪙 COINS</div>
+    <button class="store-btn buy-theme-btn" style="width:100%;max-width:200px;min-height:44px;" onclick="claimDailyReward()">🎉 CLAIM REWARD</button>
+  </div>
+</div>
+
+<!-- ░░░ 8C. TOKEN / PAWN SELECTION MODAL (GOOGLE ANTIGRAVITY) ░░░ -->
+<div id="token-select-modal">
+  <div class="token-select-card" style="position:relative">
+    <button onclick="closeTokenSelectModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,0.7);font-size:18px;cursor:pointer;">✕</button>
+    <div style="font-size:38px;margin-bottom:4px">♟️</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;color:var(--neon);letter-spacing:1.5px">TOKEN CUSTOMIZATION</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px">Synced with Google Antigravity Database</div>
+    <div class="token-skins-grid" id="token-skins-grid"></div>
+    <button id="token-confirm-btn" class="store-btn buy-theme-btn" style="width:100%;max-width:240px;min-height:44px;" onclick="confirmTokenSelection()">✓ CONFIRM &amp; SAVE</button>
+  </div>
 </div>
 <div id="confetti-container"></div>
 
@@ -1714,6 +1896,24 @@ class WebAudioEngine {
       });
     } catch (e) {}
   }
+
+  // Strictly pause all audio/BGM when app enters background
+  pauseAll() {
+    this.stopBGM();
+    if (this.ctx && this.ctx.state === 'running') {
+      try { this.ctx.suspend(); } catch (e) {}
+    }
+  }
+
+  // Resume all audio/BGM when app returns to foreground
+  resumeAll() {
+    if (this.ctx && this.ctx.state === 'suspended') {
+      try { this.ctx.resume(); } catch (e) {}
+    }
+    if (!this.isMuted) {
+      this.startBGM();
+    }
+  }
 }
 
 const AudioSys = new WebAudioEngine();
@@ -1722,6 +1922,26 @@ function toggleAudio() {
 }
 // Unlock Web Audio on first user interaction anywhere
 window.addEventListener('pointerdown', () => AudioSys.init(), { once: true });
+
+// ── CAPACITOR BACKGROUND AUDIO MANAGEMENT (@capacitor/app) ──
+if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+  const { App } = window.Capacitor.Plugins;
+  App.addListener('appStateChange', ({ isActive }) => {
+    if (!isActive) {
+      AudioSys.pauseAll();
+    } else {
+      AudioSys.resumeAll();
+    }
+  });
+}
+// Fallback for browser visibility change
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    AudioSys.pauseAll();
+  } else {
+    AudioSys.resumeAll();
+  }
+});
 </script>
 
 <!-- ════════════════════════════════════════════════════
@@ -1827,10 +2047,74 @@ let wallet = parseInt(localStorage.getItem('lw_coins') || '500');
 let ownedThemes = JSON.parse(localStorage.getItem('lw_owned') || '["cyber"]');
 let activeThemeId = localStorage.getItem('lw_active_theme') || 'cyber';
 
+// ── 3B. TOKEN / PAWN SKINS & GOOGLE ANTIGRAVITY DATABASE PERSISTENCE ──
+const TOKEN_SKINS = [
+  { id: 'classic', name: 'Cyber Sovereign', icon: '👑', desc: 'Standard Futuristic Neon Pawn' },
+  { id: 'mecha',   name: 'Neon Mecha',     icon: '⚡', desc: 'Armored High-Tech Combat Bot' },
+  { id: 'crystal', name: 'Astral Crystal', icon: '💎', desc: 'Holographic Radiant Gemstone' },
+  { id: 'dragon',  name: 'Golden Dragon',  icon: '🐉', desc: 'Ancient Legendary Mythic Pawn' },
+];
+
+let selectedTokenSkin = localStorage.getItem('antigravity_token_pref') || localStorage.getItem('lw_selected_token') || 'classic';
+
+function selectTokenSkin(skinId) {
+  selectedTokenSkin = skinId;
+  localStorage.setItem('antigravity_token_pref', skinId);
+  localStorage.setItem('lw_selected_token', skinId);
+  renderTokenSkinsGrid();
+  renderAllTokens();
+  showToast(`♟️ ${skinId.toUpperCase()} saved to Google Antigravity DB!`);
+}
+
+function renderTokenSkinsGrid() {
+  const grid = document.getElementById('token-skins-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  TOKEN_SKINS.forEach(skin => {
+    const isSel = selectedTokenSkin === skin.id;
+    const card = document.createElement('div');
+    card.className = 'token-skin-option' + (isSel ? ' active' : '');
+    card.onclick = () => selectTokenSkin(skin.id);
+    card.innerHTML = `
+      <div class="token-skin-icon">${skin.icon}</div>
+      <div class="token-skin-name">${skin.name}</div>
+      <div class="token-skin-desc">${skin.desc}</div>
+      ${isSel ? '<span style="font-size:8px;color:var(--neon);font-weight:900">ACTIVE</span>' : ''}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+let isPreMatchTokenModal = false;
+
+function openTokenSelectModal(preMatch = false) {
+  isPreMatchTokenModal = preMatch;
+  renderTokenSkinsGrid();
+  const btn = document.getElementById('token-confirm-btn');
+  if (btn) {
+    btn.textContent = preMatch ? '⚔️ ENTER BATTLE WITH TOKEN' : '✓ CONFIRM & SAVE';
+  }
+  document.getElementById('token-select-modal').classList.add('open');
+}
+
+function confirmTokenSelection() {
+  closeTokenSelectModal();
+  if (isPreMatchTokenModal) {
+    isPreMatchTokenModal = false;
+    startGame();
+  }
+}
+
+function closeTokenSelectModal() {
+  document.getElementById('token-select-modal').classList.remove('open');
+}
+
 function saveWallet() {
   localStorage.setItem('lw_coins', wallet);
   localStorage.setItem('lw_owned', JSON.stringify(ownedThemes));
-  localStorage.setItem('lw_active_theme', activeThemeId);
+  if (!GS || !GS.tempTrialTheme) {
+    localStorage.setItem('lw_active_theme', activeThemeId);
+  }
 }
 
 // ── 4. RUNTIME GAME STATE ──────────────────────────────────────
@@ -1846,6 +2130,8 @@ let GS = {
   extraTurn: false,
   loadedDice: false,
   premiumSkin: false,
+  finishedRanks: [],
+  tempTrialTheme: null,
 };
 
 let lobbySettings = {
@@ -1873,6 +2159,9 @@ window.addEventListener('DOMContentLoaded', () => {
   buildLobbyPlayerList();
   updateLobbyCoins();
   buildThemeStore();
+  renderTokenSkinsGrid();
+  checkDailyLoginReward();
+  AdMobService.init();
 
   const audioBtn = document.getElementById('audio-toggle-btn');
   if (audioBtn) audioBtn.textContent = AudioSys.isMuted ? '🔇' : '🔊';
@@ -1918,7 +2207,7 @@ document.querySelectorAll('#count-group .toggle-btn').forEach(btn => {
   });
 });
 
-document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('start-btn').addEventListener('click', () => openTokenSelectModal(true));
 
 function syncAIDefaults() {
   document.querySelectorAll('.player-row').forEach((row, i) => {
@@ -1980,15 +2269,138 @@ function updateLobbyCoins() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  AD SIMULATION & IN-MATCH MONETIZATION POWER-UPS
+//  3. AD FREQUENCY CAPPING & CAPACITOR ADMOB INTEGRATION
 // ═══════════════════════════════════════════════════════════════
+const AD_CAPS = {
+  maxAdsPerDay: 6,
+  maxAdsPerHour: 2
+};
+
+function checkAdFrequencyCap() {
+  const now = Date.now();
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+  const ONE_HOUR = 60 * 60 * 1000;
+
+  let list = [];
+  try {
+    list = JSON.parse(localStorage.getItem('lw_ad_timestamps') || '[]');
+    if (!Array.isArray(list)) list = [];
+  } catch (e) {
+    list = [];
+  }
+
+  // Keep entries from past 24 hours
+  list = list.filter(ts => typeof ts === 'number' && ts > (now - ONE_DAY));
+  localStorage.setItem('lw_ad_timestamps', JSON.stringify(list));
+
+  const pastHour = list.filter(ts => ts > (now - ONE_HOUR));
+  const pastDay = list;
+
+  if (pastHour.length >= AD_CAPS.maxAdsPerHour) {
+    const oldestInHour = Math.min(...pastHour);
+    const waitMins = Math.max(1, Math.ceil((oldestInHour + ONE_HOUR - now) / 60000));
+    return {
+      allowed: false,
+      reason: `Hourly ad limit reached (${pastHour.length}/${AD_CAPS.maxAdsPerHour}). Please wait ${waitMins} min!`
+    };
+  }
+
+  if (pastDay.length >= AD_CAPS.maxAdsPerDay) {
+    const oldestInDay = Math.min(...pastDay);
+    const waitHours = Math.max(1, Math.ceil((oldestInDay + ONE_DAY - now) / 3600000));
+    return {
+      allowed: false,
+      reason: `Daily ad limit reached (${pastDay.length}/${AD_CAPS.maxAdsPerDay}). Resets in ~${waitHours}h!`
+    };
+  }
+
+  return {
+    allowed: true,
+    hourlyRemaining: AD_CAPS.maxAdsPerHour - pastHour.length,
+    dailyRemaining: AD_CAPS.maxAdsPerDay - pastDay.length
+  };
+}
+
+function recordAdWatched() {
+  const now = Date.now();
+  let list = [];
+  try {
+    list = JSON.parse(localStorage.getItem('lw_ad_timestamps') || '[]');
+    if (!Array.isArray(list)) list = [];
+  } catch (e) { list = []; }
+  list.push(now);
+  localStorage.setItem('lw_ad_timestamps', JSON.stringify(list));
+}
+
+// ── CAPACITOR ADMOB SERVICE (WITH WEB SIMULATION FALLBACK) ──
+const AdMobService = {
+  isCapacitor: false,
+  initialized: false,
+
+  async init() {
+    try {
+      if (window.Capacitor && window.Capacitor.isPluginAvailable && window.Capacitor.isPluginAvailable('AdMob')) {
+        const { AdMob } = window.Capacitor.Plugins;
+        await AdMob.initialize({
+          requestTrackingAuthorization: true,
+          testingDevices: ['EMULATOR'],
+          initializeForTesting: true,
+        });
+        this.isCapacitor = true;
+        this.initialized = true;
+        console.log('✅ AdMob Initialized via @capacitor-community/admob');
+      } else {
+        console.log('ℹ️ Running outside native Capacitor: Web ad simulation active.');
+      }
+    } catch (err) {
+      console.warn('⚠️ AdMob plugin initialization warning:', err);
+    }
+  },
+
+  async showRewardVideo(rewardTitle = 'Reward') {
+    // 1. Check Frequency Capping first
+    const capCheck = checkAdFrequencyCap();
+    if (!capCheck.allowed) {
+      alert('Ad limit reached. Please try again later.');
+      showToast(capCheck.reason || 'Ad limit reached. Please try again later.');
+      return false;
+    }
+
+    // 2. Try native Capacitor AdMob
+    if (this.isCapacitor && window.Capacitor?.Plugins?.AdMob) {
+      try {
+        const { AdMob } = window.Capacitor.Plugins;
+        const isAndroid = (window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android');
+        const adId = isAndroid
+          ? 'ca-app-pub-3940256099942544/5224354917'  // Official Google Android test rewarded ID
+          : 'ca-app-pub-3940256099942544/1712485313'; // Official Google iOS test rewarded ID
+
+        await AdMob.prepareRewardVideoAd({ adId });
+        await AdMob.showRewardVideoAd();
+        recordAdWatched();
+        return true;
+      } catch (nativeErr) {
+        console.warn('⚠️ Native AdMob failed, using animated simulation fallback:', nativeErr);
+      }
+    }
+
+    // 3. Fallback: 3-Second Web Simulation
+    const watched = await showAd(rewardTitle);
+    if (watched) {
+      recordAdWatched();
+      return true;
+    }
+    return false;
+  }
+};
+
 function showAd(rewardTitle) {
   return new Promise(resolve => {
     const overlay = document.getElementById('ad-loading');
     const fill = document.getElementById('ad-progress-fill');
     const rewardEl = document.getElementById('ad-reward-text');
 
-    document.getElementById('ad-loading-title').textContent = 'SPONSORED AD';
+    document.getElementById('ad-loading-title').textContent = 'SPONSORED REWARD AD';
     document.getElementById('ad-loading-sub').textContent = '⏳ 3 seconds remaining...';
     rewardEl.style.display = 'none'; fill.style.width = '0%';
     overlay.classList.add('open');
@@ -2014,48 +2426,118 @@ function showAd(rewardTitle) {
   });
 }
 
+// ── DAILY LOGIN REWARD (EVERY 24 HOURS) ──
+function checkDailyLoginReward() {
+  const now = Date.now();
+  const lastDaily = parseInt(localStorage.getItem('lw_last_daily_login') || '0', 10);
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+
+  if (now - lastDaily >= ONE_DAY) {
+    wallet += 100;
+    saveWallet();
+    localStorage.setItem('lw_last_daily_login', now.toString());
+    updateLobbyCoins();
+
+    setTimeout(() => {
+      showDailyRewardModal(100);
+    }, 2800);
+  }
+}
+
+function showDailyRewardModal(coins) {
+  const modal = document.getElementById('daily-reward-modal');
+  if (modal) {
+    modal.classList.add('open');
+    fireFireworks();
+    AudioSys.playWinFanfare();
+  }
+}
+
+function claimDailyReward() {
+  const modal = document.getElementById('daily-reward-modal');
+  if (modal) modal.classList.remove('open');
+  showToast('🎉 +100 🪙 Daily Bonus Added to Wallet!');
+}
+
 async function watchAdLobby() {
+  const cap = checkAdFrequencyCap();
+  if (!cap.allowed) {
+    showToast(cap.reason);
+    return;
+  }
   const btn = document.getElementById('lobby-watch-ad-btn');
   btn.disabled = true;
-  await showAd('🎉 +100 Coins Earned!');
-  wallet += 100;
-  saveWallet();
-  updateLobbyCoins();
-  showToast('+100 🪙 Coins added to your wallet!');
+  const success = await AdMobService.showRewardVideo('🎉 +100 Coins Earned!');
+  if (success) {
+    wallet += 100;
+    saveWallet();
+    updateLobbyCoins();
+    showToast('+100 🪙 Coins added to your wallet!');
+  }
   btn.disabled = false;
 }
 
-async function watchAdLoadedDice() {
+// ── SMART POWER-UP PURCHASING (COINS >= 20 DEDUCTS, COINS < 20 WATCHES AD) ──
+async function handleSmartPowerup(type) {
   if (GS.animating) return;
-  const btn = document.getElementById('ad-loaded-dice-btn');
-  await showAd('🎯 Loaded Dice Active! Next roll is 6!');
-  GS.loadedDice = true;
-  btn.classList.add('used');
-  showToast('🎯 Loaded Dice armed! Next roll is guaranteed 6!');
-}
-
-async function watchAdRageBoost() {
-  if (GS.animating) return;
-  const btn = document.getElementById('ad-rage-boost-btn');
-  await showAd('⚡ Rage Boost Activated! Rage = 100%!');
   const cp = GS.players[GS.currentPlayerIndex];
-  if (cp) {
-    cp.rageMeter = 100;
-    updateRageMeter();
+  if (cp && cp.isAI) {
+    showToast('Wait for your turn to activate power-ups!');
+    return;
   }
-  btn.classList.add('used');
-  showToast('⚡ Rage Maxed! STAMPEDE is Ready!');
+
+  const COST = 20;
+  if (wallet >= COST) {
+    // Coins >= 20: Deduct 20 coins and activate immediately
+    wallet -= COST;
+    saveWallet();
+    updateLobbyCoins();
+    updateCoinDisplay();
+    activatePowerupFeature(type);
+    showToast(`-20 🪙 Coins: Power-up Activated!`);
+  } else {
+    // Coins < 20: Prompt 'Watch Ad'
+    const cap = checkAdFrequencyCap();
+    if (!cap.allowed) {
+      showToast(`Need 20 🪙! Ad unavailable: ${cap.reason}`);
+      return;
+    }
+    showToast('Coins < 20: Watching Ad to Activate...');
+    const success = await AdMobService.showRewardVideo('Power-Up Activated!');
+    if (success) {
+      activatePowerupFeature(type);
+      showToast(`🎬 Ad complete! Power-up Activated!`);
+    }
+  }
 }
 
-async function watchAdPremiumDice() {
-  if (GS.animating) return;
-  const btn = document.getElementById('ad-premium-dice-btn');
-  await showAd('✨ Premium Holographic Dice Skin Active!');
-  GS.premiumSkin = true;
-  document.getElementById('dynamic-dice').classList.add('premium-skin');
-  btn.classList.add('used');
-  showToast('✨ Premium Glowing Neon Dice skin unlocked!');
+function activatePowerupFeature(type) {
+  if (type === 'loaded') {
+    GS.loadedDice = true;
+    document.getElementById('ad-loaded-dice-btn').classList.add('used');
+    AudioSys.playChimeSound();
+    showToast('🎯 Loaded Dice armed! Next roll is 6!');
+  } else if (type === 'rage') {
+    const cp = GS.players[GS.currentPlayerIndex];
+    if (cp) {
+      cp.rageMeter = 100;
+      updateRageMeter();
+    }
+    document.getElementById('ad-rage-boost-btn').classList.add('used');
+    AudioSys.playChimeSound();
+    showToast('⚡ Rage Maxed! STAMPEDE is Ready!');
+  } else if (type === 'premium') {
+    GS.premiumSkin = true;
+    document.getElementById('dynamic-dice').classList.add('premium-skin');
+    document.getElementById('ad-premium-dice-btn').classList.add('used');
+    AudioSys.playChimeSound();
+    showToast('✨ Premium Glowing Neon Dice skin unlocked!');
+  }
 }
+
+function watchAdLoadedDice() { handleSmartPowerup('loaded'); }
+function watchAdRageBoost() { handleSmartPowerup('rage'); }
+function watchAdPremiumDice() { handleSmartPowerup('premium'); }
 
 function resetInMatchAdButtons() {
   GS.loadedDice = false;
@@ -2065,27 +2547,81 @@ function resetInMatchAdButtons() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  THEME STORE LOGIC
+//  THEME STORE LOGIC & THEME TRIAL (TRY FOR 1 MATCH)
 // ═══════════════════════════════════════════════════════════════
 function buildThemeStore() {
   const grid = document.getElementById('store-grid');
   grid.innerHTML = '';
   THEMES.forEach(theme => {
     const owned = ownedThemes.includes(theme.id);
-    const isActive = activeThemeId === theme.id;
+    const isEquipped = activeThemeId === theme.id;
+    const isTrial = (GS.tempTrialTheme === theme.id);
 
     const card = document.createElement('div');
-    card.className = 'theme-card' + (owned ? ' owned' : '') + (isActive ? ' active-theme' : '');
+    card.className = 'theme-card' + (owned ? ' owned' : '') + (isEquipped ? ' active-theme' : '');
     card.style.background = getThemeCardBg(theme.id);
+
+    let badgeHtml = '';
+    if (isTrial) {
+      badgeHtml = '<div class="theme-badge" style="background:#ffaa00;color:#000;">TRIAL (1 MATCH)</div>';
+    } else if (isEquipped) {
+      badgeHtml = '<div class="theme-badge badge-active">EQUIPPED</div>';
+    } else if (owned) {
+      badgeHtml = '<div class="theme-badge badge-owned">OWNED</div>';
+    } else if (theme.price === 0) {
+      badgeHtml = '<div class="theme-badge badge-free">FREE</div>';
+    }
+
+    let actionsHtml = '';
+    if (!owned && theme.price > 0) {
+      actionsHtml = `
+        <div class="theme-price">🪙 ${theme.price}</div>
+        <div style="display:flex;gap:6px;width:100%;margin-top:4px;">
+          <button class="store-btn buy-theme-btn" style="flex:1;" onclick="buyTheme('${theme.id}')">UNLOCK</button>
+          <button class="store-btn trial-theme-btn" style="flex:1;" onclick="tryThemeForOneMatch('${theme.id}')">🎬 TRY 1 MATCH</button>
+        </div>
+      `;
+    } else if (owned && !isEquipped) {
+      actionsHtml = `<button class="store-btn equip-theme-btn" onclick="equipTheme('${theme.id}')">EQUIP</button>`;
+    }
+
     card.innerHTML = `
       <div class="theme-emoji">${theme.emoji}</div>
       <div class="theme-name">${theme.name}</div>
-      ${isActive ? '<div class="theme-badge badge-active">EQUIPPED</div>' : owned ? '<div class="theme-badge badge-owned">OWNED</div>' : theme.price === 0 ? '<div class="theme-badge badge-free">FREE</div>' : ''}
-      ${!owned && theme.price > 0 ? `<div class="theme-price">🪙 ${theme.price}</div><button class="store-btn buy-theme-btn" onclick="buyTheme('${theme.id}')">UNLOCK</button>` : ''}
-      ${owned && !isActive ? `<button class="store-btn equip-theme-btn" onclick="equipTheme('${theme.id}')">EQUIP</button>` : ''}
+      ${badgeHtml}
+      ${actionsHtml}
     `;
     grid.appendChild(card);
   });
+}
+
+async function tryThemeForOneMatch(themeId) {
+  const theme = THEMES.find(t => t.id === themeId);
+  if (!theme) return;
+  if (ownedThemes.includes(themeId)) {
+    equipTheme(themeId);
+    return;
+  }
+
+  const cap = checkAdFrequencyCap();
+  if (!cap.allowed) {
+    alert('Ad limit reached. Please try again later.');
+    showToast(cap.reason || 'Ad limit reached. Please try again later.');
+    return;
+  }
+
+  const success = await AdMobService.showRewardVideo(`Theme Trial: ${theme.name}`);
+  if (success) {
+    GS.tempTrialTheme = themeId;
+    activeThemeId = themeId;
+    applyThemeById(themeId);
+    updateActiveThemeDisplay();
+    closeThemeStore();
+    showToast(`✨ Trial Active: ${theme.name} equipped for 1 MATCH!`);
+  } else {
+    alert('Ad limit reached. Please try again later.');
+    showToast('Ad limit reached. Please try again later.');
+  }
 }
 
 function getThemeCardBg(id) {
@@ -2246,6 +2782,7 @@ function buildNinjaTheme()   { spawnFloatingBgEmojis(['🥷','⚔️','🏮','�
 //  START GAME & SCREEN TRANSITION
 // ═══════════════════════════════════════════════════════════════
 function startGame() {
+  closeTokenSelectModal();
   AudioSys.init();
 
   const playerInputs = document.querySelectorAll('.player-name-input');
@@ -2259,6 +2796,7 @@ function startGame() {
   GS.selectableTokens = [];
   GS.animating = false;
   GS.extraTurn = false;
+  GS.finishedRanks = [];
   resetInMatchAdButtons();
 
   GS.players = [];
@@ -2273,6 +2811,8 @@ function startGame() {
       isAI,
       coins: 100,
       rageMeter: 0,
+      isFinished: false,
+      rank: null,
     };
 
     if (GS.mode === 'ludo') {
@@ -2378,11 +2918,22 @@ function renderCornerProfiles() {
 
     const statusEl = document.getElementById(`cstatus-${i}`);
     if (statusEl) {
-      if (GS.mode === 'ludo') {
+      if (p.isFinished) {
+        if (p.rank === 'Lose') {
+          statusEl.textContent = '💀 DEFEAT';
+          statusEl.style.color = 'var(--red)';
+        } else {
+          const rankEmoji = p.rank === 1 ? '🥇 1st' : p.rank === 2 ? '🥈 2nd' : '🥉 3rd';
+          statusEl.textContent = `🏆 ${rankEmoji}`;
+          statusEl.style.color = 'var(--yellow)';
+        }
+      } else if (GS.mode === 'ludo') {
         const home = p.tokens.filter(t => t.atHome).length;
         statusEl.textContent = `${home}/4 👑`;
+        statusEl.style.color = 'rgba(255,255,255,0.7)';
       } else {
         statusEl.textContent = p.tokens[0].pos === 0 ? 'START' : `Tile ${p.tokens[0].pos}`;
+        statusEl.style.color = 'rgba(255,255,255,0.7)';
       }
     }
   }
@@ -2902,16 +3453,19 @@ function executeLudoMove(pIdx, tokenIdx, roll) {
 
 function getLudoCellCoords(pIdx, routePos) {
   if (routePos <= 0) return YARD_SPOTS[pIdx][0];
-  if (routePos >= 1 && routePos <= 52) {
+  // Outer shared path: steps 1 to 51 (step 51 is the Arrow Tile)
+  if (routePos >= 1 && routePos <= 51) {
     return SHARED_PATH[(ENTRY_INDEX[pIdx] + routePos - 1) % 52];
   }
-  if (routePos >= 53 && routePos <= 58) {
-    return HOME_COLS[pIdx][routePos - 53];
+  // Colored Home Stretch: steps 52 to 57 lead directly into the center
+  if (routePos >= 52 && routePos <= 57) {
+    return HOME_COLS[pIdx][routePos - 52];
   }
-  return [7, 7]; // Center crown
+  // Center crown
+  return [7, 7];
 }
 
-// CRITICAL FIX 3: Smooth Hopping Tile-By-Tile Animation + Audio
+// CRITICAL FIX 2 & 3: Hardware-Accelerated Smooth Gliding Tile-By-Tile
 function moveTokenSteps(pIdx, tokenIdx, steps, isStampedeMv) {
   GS.animating = true;
   const tok = GS.players[pIdx].tokens[tokenIdx];
@@ -2942,15 +3496,15 @@ function moveTokenSteps(pIdx, tokenIdx, steps, isStampedeMv) {
       }
     }
 
-    // Play tactile move pop sound & hop animation
+    // Play tactile move pop sound & hardware-accelerated transform gliding
     AudioSys.playMoveSound();
     renderAllTokens();
     spawnSparkle(pIdx, tokenIdx);
     hopToken(pIdx, tokenIdx);
     stepsLeft--;
-    setTimeout(step, 280);
+    setTimeout(step, 240);
   }
-  setTimeout(step, 100);
+  setTimeout(step, 60);
 }
 
 function hopToken(pIdx, tokenIdx) {
@@ -2966,9 +3520,9 @@ function finalizeLudoMove(pIdx, tokenIdx, isStampedeMv) {
   const p = GS.players[pIdx];
   const tok = p.tokens[tokenIdx];
 
-  // Crown Reached
+  // Crown Reached (pos 58)
   if (tok.pos >= 58) {
-    tok.pos = 59; tok.atHome = true;
+    tok.pos = 58; tok.atHome = true;
     renderAllTokens();
     addCoins(pIdx, 20);
     AudioSys.playChimeSound();
@@ -2980,8 +3534,8 @@ function finalizeLudoMove(pIdx, tokenIdx, isStampedeMv) {
     return;
   }
 
-  // Cutting Check with AGGRESSIVE SOUND
-  if (!isStampedeMv && tok.pos >= 1 && tok.pos <= 52) {
+  // Cutting Check on shared path (1 to 51)
+  if (!isStampedeMv && tok.pos >= 1 && tok.pos <= 51) {
     const mySharedIdx = (ENTRY_INDEX[pIdx] + tok.pos - 1) % 52;
     if (!SAFE_INDICES.includes(mySharedIdx)) {
       const cut = tryLudoCut(pIdx, tokenIdx);
@@ -3008,18 +3562,19 @@ function finalizeLudoMove(pIdx, tokenIdx, isStampedeMv) {
 
 function tryLudoCut(pIdx, tokenIdx) {
   const myTok = GS.players[pIdx].tokens[tokenIdx];
+  if (myTok.pos < 1 || myTok.pos > 51) return false;
   const mySharedIdx = (ENTRY_INDEX[pIdx] + myTok.pos - 1) % 52;
   let didCut = false;
 
   GS.players.forEach((op, oi) => {
     if (oi === pIdx) return;
     op.tokens.forEach(ot => {
-      if (ot.inYard || ot.atHome || ot.pos < 1 || ot.pos > 52) return;
+      if (ot.inYard || ot.atHome || ot.pos < 1 || ot.pos > 51) return;
       const opSharedIdx = (ENTRY_INDEX[oi] + ot.pos - 1) % 52;
       if (opSharedIdx === mySharedIdx) {
         ot.pos = 0; ot.inYard = true;
         addCoins(pIdx, 10);
-        AudioSys.playCaptureSound(); // CRITICAL FIX 6: Aggressive Capture Audio!
+        AudioSys.playCaptureSound(); // Aggressive Capture Audio!
         showToast(`💥 ${GS.players[pIdx].name} CAPTURED ${op.name}! +10 🪙 Extra Roll!`);
         renderAllTokens();
         didCut = true;
@@ -3028,17 +3583,17 @@ function tryLudoCut(pIdx, tokenIdx) {
   });
 
   if (didCut) {
+    renderCornerProfiles();
+    GS.extraTurn = true;
     setTimeout(() => {
       renderCornerProfiles();
       updateCoinDisplay();
-      const cp = GS.players[GS.currentPlayerIndex];
-      showToast(`${cp.name} gets an extra roll! 🎲`);
-      if (cp.isAI) scheduleAITurn();
+      updateDynamicDicePositionAndColor();
+      if (GS.players[pIdx].isAI) scheduleAITurn();
       else GS.phase = 'rolling';
-    }, 600);
-    return true;
+    }, 450);
   }
-  return false;
+  return didCut;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3139,14 +3694,17 @@ function nextTurn() {
   GS.selectableTokens = [];
   GS.phase = 'rolling';
 
+  // If match is over, stop turn cycling
+  if (GS.finishedRanks && GS.finishedRanks.length >= GS.players.length) return;
+
   let next = (GS.currentPlayerIndex + 1) % GS.players.length;
-  if (GS.mode === 'ludo') {
-    let tries = 0;
-    while (GS.players[next].tokens.every(t => t.atHome) && tries < GS.players.length) {
-      next = (next + 1) % GS.players.length;
-      tries++;
-    }
+  let tries = 0;
+  while (GS.players[next] && GS.players[next].isFinished && tries < GS.players.length) {
+    next = (next + 1) % GS.players.length;
+    tries++;
   }
+
+  if (tries >= GS.players.length) return;
 
   GS.currentPlayerIndex = next;
   renderCornerProfiles();
@@ -3168,6 +3726,72 @@ function scheduleAITurn() {
   }, 800);
 }
 
+// ── CRITICAL FIX 7: SMART BOT AI (4-TIER STRICT PRIORITY EVALUATION) ──
+function aiScoreLudoMove(pIdx, tokenIdx, roll) {
+  const p = GS.players[pIdx];
+  const tok = p.tokens[tokenIdx];
+  const targetPos = tok.inYard ? 1 : (tok.pos + roll);
+  if (targetPos > 58) return -999999;
+
+  let score = 0;
+  const isOuterTarget = targetPos >= 1 && targetPos <= 51;
+  const targetShared = isOuterTarget ? ((ENTRY_INDEX[pIdx] + targetPos - 1) % 52) : -1;
+  const isTargetSafe = isOuterTarget && SAFE_INDICES.includes(targetShared);
+
+  // Priority 1: Kill / Cut opponent pawn
+  if (isOuterTarget && !isTargetSafe) {
+    let canCut = false;
+    GS.players.forEach((op, oi) => {
+      if (oi === pIdx) return;
+      op.tokens.forEach(ot => {
+        if (ot.inYard || ot.atHome || ot.pos < 1 || ot.pos > 51) return;
+        const opShared = (ENTRY_INDEX[oi] + ot.pos - 1) % 52;
+        if (opShared === targetShared) {
+          canCut = true;
+        }
+      });
+    });
+    if (canCut) score += 100000;
+  }
+
+  // Bonus: Reaching Home Crown (pos 58)
+  if (targetPos === 58) score += 50000;
+
+  // Priority 2: Land on safe star tile OR enter safe home stretch
+  if (targetPos >= 52 && targetPos <= 57) {
+    score += 20000 + targetPos * 10;
+  } else if (isTargetSafe) {
+    score += 15000;
+  }
+
+  // Priority 3: Escape Danger (Opponent pawn 1–6 steps behind current token)
+  if (!tok.inYard && tok.pos >= 1 && tok.pos <= 51) {
+    const curShared = (ENTRY_INDEX[pIdx] + tok.pos - 1) % 52;
+    if (!SAFE_INDICES.includes(curShared)) {
+      let threatened = false;
+      GS.players.forEach((op, oi) => {
+        if (oi === pIdx) return;
+        op.tokens.forEach(ot => {
+          if (ot.inYard || ot.atHome || ot.pos < 1 || ot.pos > 51) return;
+          const opShared = (ENTRY_INDEX[oi] + ot.pos - 1) % 52;
+          const distBehind = (curShared - opShared + 52) % 52;
+          if (distBehind >= 1 && distBehind <= 6) threatened = true;
+        });
+      });
+      if (threatened) score += 8000;
+    }
+  }
+
+  // Priority 4: Advance pawn closest to center crown (targetPos higher)
+  if (tok.inYard) {
+    score += 500;
+  } else {
+    score += targetPos * 20;
+  }
+
+  return score;
+}
+
 function aiSelectToken(roll) {
   if (GS.mode === 'ludo') {
     const movable = getLudoMovableTokens(GS.currentPlayerIndex, roll);
@@ -3176,9 +3800,16 @@ function aiSelectToken(roll) {
       setTimeout(() => nextTurn(), 600);
       return;
     }
-    const best = movable.reduce((b, ti) =>
-      GS.players[GS.currentPlayerIndex].tokens[ti].pos > GS.players[GS.currentPlayerIndex].tokens[b].pos ? ti : b, movable[0]);
-    executeLudoMove(GS.currentPlayerIndex, best, roll);
+    let bestTi = movable[0];
+    let bestScore = -Infinity;
+    movable.forEach(ti => {
+      const s = aiScoreLudoMove(GS.currentPlayerIndex, ti, roll);
+      if (s > bestScore) {
+        bestScore = s;
+        bestTi = ti;
+      }
+    });
+    executeLudoMove(GS.currentPlayerIndex, bestTi, roll);
   } else {
     handleSNLRoll(roll);
   }
@@ -3216,13 +3847,19 @@ function triggerStampede() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  CRITICAL FIX 3: RENDER PSEUDO-3D LUDO PAWNS
+//  CRITICAL FIX 2 & 3: RENDER PSEUDO-3D LUDO PAWNS (HARDWARE-ACCELERATED)
 // ═══════════════════════════════════════════════════════════════
 function renderAllTokens() {
-  document.querySelectorAll('.token').forEach(el => el.remove());
+  const currentBoardId = GS.mode === 'ludo' ? 'ludo-board' : 'snl-grid';
+  const board = document.getElementById(currentBoardId);
+  if (!board) return;
+
+  // Clean up any tokens not matching the active board
+  document.querySelectorAll('.token').forEach(el => {
+    if (el.parentElement !== board) el.remove();
+  });
 
   if (GS.mode === 'ludo') {
-    const board = document.getElementById('ludo-board');
     const cellW = board.clientWidth / 15, cellH = board.clientHeight / 15;
     const cellTokens = {};
 
@@ -3241,19 +3878,38 @@ function renderAllTokens() {
         const offset = cellTokens[key] || 0;
         cellTokens[key] = offset + 1;
 
-        const el = createPawnTokenElement(p, pIdx, ti, tok);
         const sizeW = cellW * 0.88;
         const sizeH = cellH * 1.08;
-        el.style.width  = sizeW + 'px';
-        el.style.height = sizeH + 'px';
-        el.style.left = (c * cellW + cellW/2 - sizeW/2 + offset * 3.5) + 'px';
-        el.style.top  = (r * cellH + cellH/2 - sizeH/2 + offset * 3.5) + 'px';
-        board.appendChild(el);
+        const targetX = c * cellW + cellW / 2 - sizeW / 2 + offset * 3.5;
+        const targetY = r * cellH + cellH / 2 - sizeH / 2 + offset * 3.5;
+
+        let el = document.getElementById(`token-${pIdx}-${ti}`);
+        if (!el || el.parentElement !== board) {
+          el = createPawnTokenElement(p, pIdx, ti, tok);
+          el.style.width = sizeW + 'px';
+          el.style.height = sizeH + 'px';
+          el.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+          board.appendChild(el);
+        } else {
+          el.style.width = sizeW + 'px';
+          el.style.height = sizeH + 'px';
+          el.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+          el.classList.toggle('in-yard', !!tok.inYard);
+          el.classList.toggle('crowned', !!tok.atHome);
+          const lbl = el.querySelector('.token-identifier-text');
+          if (lbl) {
+            let skinIcon = '';
+            if (pIdx === 0 && selectedTokenSkin && selectedTokenSkin !== 'classic') {
+              const sk = TOKEN_SKINS.find(s => s.id === selectedTokenSkin);
+              if (sk) skinIcon = sk.icon;
+            }
+            lbl.textContent = tok.atHome ? '👑' : (skinIcon ? skinIcon : (ti + 1));
+          }
+        }
       });
     });
   } else {
     // Snakes & Ladders Pawns
-    const board = document.getElementById('snl-grid');
     const cellW = board.clientWidth / 10, cellH = board.clientHeight / 10;
     const cellTokens = {};
 
@@ -3262,28 +3918,40 @@ function renderAllTokens() {
       let pos = tok.pos;
       if (pos === 0) pos = null;
 
-      const el = createPawnTokenElement(p, pIdx, 0, tok);
       const sizeW = cellW * 0.75;
       const sizeH = cellH * 0.95;
-      el.style.width  = sizeW + 'px';
-      el.style.height = sizeH + 'px';
+      let targetX, targetY;
 
       if (pos === null) {
-        el.style.left = '-100px'; el.style.top = '-100px';
+        targetX = -100;
+        targetY = -100;
       } else {
         const { row, col } = snlTileToGridPos(pos);
         const key = `${row},${col}`;
         const offset = cellTokens[key] || 0;
         cellTokens[key] = offset + 1;
-        el.style.left = (col * cellW + cellW/2 - sizeW/2 + offset * 4.5) + 'px';
-        el.style.top  = (row * cellH + cellH/2 - sizeH/2) + 'px';
+        targetX = col * cellW + cellW / 2 - sizeW / 2 + offset * 4.5;
+        targetY = row * cellH + cellH / 2 - sizeH / 2;
       }
-      board.appendChild(el);
+
+      let el = document.getElementById(`token-${pIdx}-0`);
+      if (!el || el.parentElement !== board) {
+        el = createPawnTokenElement(p, pIdx, 0, tok);
+        el.style.width = sizeW + 'px';
+        el.style.height = sizeH + 'px';
+        el.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+        board.appendChild(el);
+      } else {
+        el.style.width = sizeW + 'px';
+        el.style.height = sizeH + 'px';
+        el.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+        el.classList.toggle('crowned', !!tok.atHome);
+      }
     });
   }
 }
 
-// Authentic Pseudo-3D Ludo Pawn SVG
+// Authentic Pseudo-3D Ludo Pawn SVG (Hardware-Accelerated & Customizable)
 function createPawnTokenElement(p, pIdx, tokenIdx, tok) {
   const el = document.createElement('div');
   el.className = 'token' + (tok.inYard ? ' in-yard' : '') + (tok.atHome ? ' crowned' : '');
@@ -3292,7 +3960,24 @@ function createPawnTokenElement(p, pIdx, tokenIdx, tok) {
   const cDark = p.colorDark || '#00552b';
   const cMain = p.color || '#00ff88';
   const cLight = p.colorLight || '#7affc4';
-  const label = tok.atHome ? '👑' : (tokenIdx + 1);
+
+  let skinIcon = '';
+  if (pIdx === 0 && selectedTokenSkin && selectedTokenSkin !== 'classic') {
+    const sk = TOKEN_SKINS.find(s => s.id === selectedTokenSkin);
+    if (sk) skinIcon = sk.icon;
+  }
+  const label = tok.atHome ? '👑' : (skinIcon ? skinIcon : (tokenIdx + 1));
+
+  let extraDecoration = '';
+  if (pIdx === 0) {
+    if (selectedTokenSkin === 'mecha') {
+      extraDecoration = `<rect x="13" y="10" width="10" height="2.5" rx="1" fill="#00f5ff" filter="drop-shadow(0 0 3px #00f5ff)"/>`;
+    } else if (selectedTokenSkin === 'crystal') {
+      extraDecoration = `<polygon points="18,5 21,11 18,17 15,11" fill="rgba(255,255,255,0.7)" filter="drop-shadow(0 0 3px #00f5ff)"/>`;
+    } else if (selectedTokenSkin === 'dragon') {
+      extraDecoration = `<path d="M 12 7 Q 10 2 8 4 Q 10 6 12 8 M 24 7 Q 26 2 28 4 Q 26 6 24 8" fill="#ffdd00" filter="drop-shadow(0 0 3px #ffdd00)"/>`;
+    }
+  }
 
   el.innerHTML = `
     <svg viewBox="0 0 36 44" class="pawn-svg">
@@ -3319,8 +4004,9 @@ function createPawnTokenElement(p, pIdx, tokenIdx, tok) {
       <!-- Shiny Spherical Head -->
       <circle cx="18" cy="11" r="7" fill="url(#phead-${pIdx}-${tokenIdx})"/>
       <ellipse cx="15.5" cy="8.5" rx="2.5" ry="1.5" fill="#ffffff" opacity="0.85" transform="rotate(-30 15.5 8.5)"/>
+      ${extraDecoration}
       <!-- Token Identifier -->
-      <text x="18" y="32.5" font-family="'Orbitron',sans-serif" font-size="7.5" font-weight="900" fill="#ffffff" text-anchor="middle" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.9))">${label}</text>
+      <text class="token-identifier-text" x="18" y="32.5" font-family="'Orbitron',sans-serif" font-size="7.5" font-weight="900" fill="#ffffff" text-anchor="middle" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.9))">${label}</text>
     </svg>
   `;
 
@@ -3330,33 +4016,167 @@ function createPawnTokenElement(p, pIdx, tokenIdx, tok) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  WIN CHECK, CONFETTI & COINS
+//  WIN CHECK, MULTI-RANK FINISH LOGIC, FIREWORKS & SCREENS
 // ═══════════════════════════════════════════════════════════════
+function fireFireworks() {
+  if (typeof confetti === 'function') {
+    const end = Date.now() + 2500;
+    const colors = ['#00f5ff', '#ff00ff', '#ffdd00', '#00ff88', '#ff3366', '#ffffff'];
+    const interval = setInterval(() => {
+      if (Date.now() > end) return clearInterval(interval);
+      confetti({
+        particleCount: 45,
+        startVelocity: 35,
+        spread: 360,
+        ticks: 70,
+        origin: { x: 0.15 + Math.random() * 0.7, y: 0.2 + Math.random() * 0.4 },
+        colors: colors,
+        disableForReducedMotion: true
+      });
+    }, 220);
+  } else {
+    spawnConfetti('#ffdd00');
+  }
+}
+
 function checkWin(pIdx) {
   const p = GS.players[pIdx];
+  if (!p || p.isFinished) return false;
+
   const won = GS.mode === 'ludo'
     ? p.tokens.every(t => t.atHome)
     : p.tokens[0].pos >= 100;
 
-  if (won) {
-    addCoins(pIdx, 100);
-    wallet += 100;
+  if (!won) return false;
+
+  // Mark player as successfully finished
+  p.isFinished = true;
+  const rankNum = GS.finishedRanks.length + 1; // 1st, 2nd, or 3rd
+  p.rank = rankNum;
+  GS.finishedRanks.push({
+    pIdx: pIdx,
+    rank: rankNum,
+    name: p.name,
+    color: p.color,
+    isAI: p.isAI
+  });
+
+  // Award Coins by Rank: 1st = 100, 2nd = 50, 3rd = 25
+  const rankReward = rankNum === 1 ? 100 : (rankNum === 2 ? 50 : 25);
+  addCoins(pIdx, rankReward);
+  if (pIdx === 0) {
+    wallet += rankReward;
     saveWallet();
     updateLobbyCoins();
-    AudioSys.playWinFanfare();
-    setTimeout(() => showWinScreen(pIdx), 600);
+  }
+
+  AudioSys.playWinFanfare();
+  fireFireworks();
+
+  // Show "You Finished!" banner or notification
+  showFinishedBanner(pIdx, rankNum, rankReward);
+
+  // Check if exactly (N - 1) players have now finished
+  const maxWinners = Math.max(1, GS.players.length - 1);
+  if (GS.finishedRanks.length >= maxWinners) {
+    // 4th / Last remaining player automatically receives 'Lose' status
+    const loserIdx = GS.players.findIndex(pl => !pl.isFinished);
+    if (loserIdx !== -1) {
+      const loser = GS.players[loserIdx];
+      loser.isFinished = true;
+      loser.rank = 'Lose';
+      GS.finishedRanks.push({
+        pIdx: loserIdx,
+        rank: 'Lose',
+        name: loser.name,
+        color: loser.color,
+        isAI: loser.isAI
+      });
+    }
+
+    renderCornerProfiles();
+
+    // If the 4th/last remaining player is human: immediately show 'You Lose' screen
+    if (loserIdx === 0) {
+      setTimeout(() => showLoseScreen(), 800);
+    } else {
+      setTimeout(() => showMatchCompleteLeaderboard(), 1200);
+    }
     return true;
   }
-  return false;
+
+  // Match continues for the remaining active players!
+  renderCornerProfiles();
+  setTimeout(() => nextTurn(), 1200);
+  return true;
 }
 
-function showWinScreen(pIdx) {
+function showFinishedBanner(pIdx, rankNum, rankReward) {
   const p = GS.players[pIdx];
-  document.getElementById('win-msg').innerHTML = `<span style="font-size:15px;color:#ffdd00;letter-spacing:4px;display:block;margin-bottom:4px">👑 VICTORY! 👑</span>${p.name} WINS!`;
-  document.getElementById('win-msg').style.color = p.color;
-  document.getElementById('win-coins').textContent = `Match Reward: +100 🪙 | Total Wallet: ${wallet}`;
-  document.getElementById('win-screen').classList.add('open');
-  spawnConfetti(p.color);
+  const rankSuffix = rankNum === 1 ? '1st' : (rankNum === 2 ? '2nd' : '3rd');
+  const emoji = rankNum === 1 ? '🥇' : (rankNum === 2 ? '🥈' : '🥉');
+
+  if (pIdx === 0) {
+    const banner = document.getElementById('finish-banner');
+    if (banner) {
+      document.getElementById('finish-rank-emoji').textContent = emoji;
+      document.getElementById('finish-rank-badge').textContent = `${rankSuffix.toUpperCase()} PLACE`;
+      document.getElementById('finish-rank-sub').textContent = `+${rankReward} 🪙 Reward • Total: ${wallet} Coins`;
+      banner.classList.add('open');
+    }
+  } else {
+    showToast(`🏆 ${p.name} finished in ${rankSuffix} Place! (${emoji})`);
+  }
+}
+
+function closeFinishBanner() {
+  const banner = document.getElementById('finish-banner');
+  if (banner) banner.classList.remove('open');
+}
+
+function showLoseScreen() {
+  closeFinishBanner();
+  const screen = document.getElementById('lose-screen');
+  if (!screen) return;
+  buildPodiumHtml('lose-podium');
+  screen.classList.add('open');
+}
+
+function showMatchCompleteLeaderboard() {
+  closeFinishBanner();
+  const winScreen = document.getElementById('win-screen');
+  if (!winScreen) return;
+
+  const winner = GS.finishedRanks.find(r => r.rank === 1);
+  const winMsg = document.getElementById('win-msg');
+  if (winMsg && winner) {
+    winMsg.innerHTML = `<span style="font-size:15px;color:#ffdd00;letter-spacing:4px;display:block;margin-bottom:4px">👑 MATCH COMPLETED! 👑</span>${winner.name} TOOK 1ST PLACE!`;
+    winMsg.style.color = winner.color;
+  }
+
+  buildPodiumHtml('win-podium');
+  document.getElementById('win-coins').textContent = `Match Finished! Total Wallet: ${wallet} 🪙`;
+  winScreen.classList.add('open');
+}
+
+function buildPodiumHtml(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  let html = '<div class="match-podium-box">';
+
+  GS.finishedRanks.forEach(r => {
+    const isLose = (r.rank === 'Lose');
+    const rankClass = isLose ? 'podium-rank-lose' : `podium-rank-${r.rank}`;
+    const rankLabel = isLose ? '💀 Defeated (Lose)' : (r.rank === 1 ? '🥇 1st Place' : (r.rank === 2 ? '🥈 2nd Place' : '🥉 3rd Place'));
+    html += `
+      <div class="podium-row ${rankClass}">
+        <span>${rankLabel}</span>
+        <span style="font-weight:900;color:${r.color}">${r.name}</span>
+      </div>
+    `;
+  });
+  html += '</div>';
+  el.innerHTML = html;
 }
 
 function spawnConfetti(color) {
@@ -3451,11 +4271,27 @@ function goToLobby() {
   clearTimeout(easterEggTimer);
   document.getElementById('easter-snake').style.display = 'none';
   document.getElementById('win-screen').classList.remove('open');
+  const loseScreen = document.getElementById('lose-screen');
+  if (loseScreen) loseScreen.classList.remove('open');
+  closeFinishBanner();
+  const dailyModal = document.getElementById('daily-reward-modal');
+  if (dailyModal) dailyModal.classList.remove('open');
   document.getElementById('confetti-container').innerHTML = '';
   document.getElementById('game-screen').classList.add('hidden');
   document.getElementById('lobby-screen').classList.remove('hidden');
   const snlDock = document.getElementById('snl-dice-dock');
   if (snlDock) snlDock.style.display = 'none';
+
+  // Revert temporary trial theme if active
+  if (GS.tempTrialTheme) {
+    const revertedTheme = localStorage.getItem('lw_active_theme') || 'cyber';
+    activeThemeId = revertedTheme;
+    applyThemeById(activeThemeId);
+    updateActiveThemeDisplay();
+    showToast(`Theme trial for ${GS.tempTrialTheme} expired. Reverted to ${revertedTheme}.`);
+    GS.tempTrialTheme = null;
+  }
+
   GS.phase = 'rolling'; GS.animating = false;
   updateLobbyCoins();
 }
