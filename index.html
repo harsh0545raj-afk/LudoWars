@@ -6,6 +6,14 @@
 <title>LUDO WARS – Ultimate Premium Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "@capacitor/core": "./node_modules/@capacitor/core/dist/index.js",
+    "@capacitor/app": "./node_modules/@capacitor/app/dist/esm/index.js"
+  }
+}
+</script>
 <style>
 /* ════════════════════════════════════════════════════
    1. RESET & CORE MOBILE LAYOUT (100dvh, NO SCROLL)
@@ -558,13 +566,17 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   align-items: center; justify-items: center;
   box-shadow: inset 0 0 14px rgba(0,0,0,0.9);
 }
-.base-socket {
+.base-socket, .circular-wrapper, .pawn-circle-wrapper {
   width: 26px; height: 26px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.25) 0%, rgba(0,0,0,0.8) 100%);
   border: 2px solid currentColor;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 0 8px currentColor;
-  pointer-events: none;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  position: relative;
+  overflow: visible;
 }
 
 /* 3x3 CENTER CROWN FINISH */
@@ -648,7 +660,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   opacity: 0.95; z-index: 5;
 }
 
-/* CRITICAL FIX 3: Standard Pseudo-3D Ludo Pawn Tokens (Hardware-Accelerated Gliding) */
+/* 1. PAWN CIRCLE ALIGNMENT & CENTERING (CSS) */
 .token {
   position: absolute;
   top: 0; left: 0;
@@ -656,17 +668,58 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   z-index: 40; pointer-events: auto;
   will-change: transform;
   transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
   filter: drop-shadow(0 4px 6px rgba(0,0,0,0.7));
 }
 .token:active { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.9)) brightness(0.9); }
-.token.in-yard { opacity: 0.88; }
+.token.in-yard { opacity: 0.95; }
 .token.crowned { opacity: 1; }
 .token.selectable {
   cursor: pointer; z-index: 55;
   animation: glowBorderPulse 0.75s ease-in-out infinite;
 }
-.token.hopping .pawn-svg { animation: tokenHopAnim 0.28s ease; }
+.token .pawn-circle-wrapper {
+  position: relative;
+  width: 100%; height: 100%;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+.token .pawn-img,
+.base-socket img,
+.circular-wrapper img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  height: 90%;
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+.token.hopping .pawn-circle-wrapper,
+.token.hopping .pawn-svg {
+  animation: tokenHopAnim 0.28s ease;
+}
 .pawn-svg { width: 100%; height: 100%; display: block; }
+.token-identifier-text {
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 7.5px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.95), 0 0 5px rgba(0,0,0,0.85);
+  pointer-events: none;
+  z-index: 3;
+}
 
 /* ─── CRITICAL FIX 1 & 5: DYNAMICALLY POSITIONING 3D DICE ─── */
 #dynamic-dice {
@@ -1170,6 +1223,67 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
 .token-skin-name { font-family: 'Orbitron', sans-serif; font-size: 9.5px; font-weight: 800; color: #fff; }
 .token-skin-desc { font-size: 7.5px; color: rgba(255,255,255,0.6); }
 
+/* ── 13. HIGHLY PROFITABLE 1-MATCH SKIN RENTAL MODAL (CSS) ── */
+.rental-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+  z-index: 950; display: flex; align-items: center; justify-content: center;
+  padding: 18px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.rental-modal.open { opacity: 1; pointer-events: auto; }
+.rental-modal-card {
+  background: linear-gradient(145deg, #120e24, #080914);
+  border: 2px solid var(--neon);
+  box-shadow: 0 0 35px rgba(0,245,255,0.45), inset 0 0 15px rgba(0,245,255,0.15);
+  border-radius: 20px; padding: 24px 20px; max-width: 330px; width: 100%;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  position: relative;
+}
+.rental-close-btn {
+  position: absolute; top: 12px; right: 14px; background: none;
+  border: none; color: rgba(255,255,255,0.7); font-size: 18px; cursor: pointer;
+}
+.rental-skin-icon { font-size: 48px; margin-bottom: 6px; filter: drop-shadow(0 0 10px var(--neon)); }
+.rental-title {
+  font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 900;
+  color: var(--yellow); letter-spacing: 1.5px; margin-bottom: 4px;
+}
+.rental-desc { font-size: 11px; color: rgba(255,255,255,0.75); margin-bottom: 6px; }
+.rental-notice {
+  font-family: 'Orbitron', sans-serif; font-size: 8px; color: var(--neon);
+  letter-spacing: 1px; padding: 4px 8px; border-radius: 6px;
+  background: rgba(0,245,255,0.1); border: 1px solid rgba(0,245,255,0.3);
+  margin-bottom: 16px; text-transform: uppercase;
+}
+.rental-options-row {
+  display: flex; gap: 10px; width: 100%;
+}
+.rental-action-btn {
+  flex: 1; min-height: 52px; border-radius: 12px; border: none;
+  cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+  padding: 8px 6px; transition: transform 0.15s;
+}
+.rental-action-btn:active { transform: scale(0.96); }
+.rental-action-btn.btn-coins {
+  background: linear-gradient(135deg, #ffaa00, #ff5500); color: #000;
+}
+.rental-action-btn.btn-ad {
+  background: linear-gradient(135deg, #00f5ff, #7700ff); color: #fff;
+}
+.rental-action-btn .btn-main {
+  font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 900;
+}
+.rental-action-btn .btn-sub { font-size: 7.5px; opacity: 0.85; }
+
+.skin-badge {
+  font-family: 'Orbitron', sans-serif; font-size: 7.5px; font-weight: 900;
+  padding: 2px 6px; border-radius: 4px; margin-top: 3px; text-transform: uppercase;
+}
+.badge-active, .active-badge { background: var(--green); color: #000; }
+.badge-rented, .rental-badge { background: var(--yellow); color: #000; box-shadow: 0 0 8px rgba(255,221,0,0.5); }
+.badge-free, .free-badge     { background: rgba(255,255,255,0.15); color: #fff; }
+.badge-rental, .lock-badge   { background: rgba(255,170,0,0.2); color: #ffaa00; border: 1px solid rgba(255,170,0,0.4); }
+
 .trial-theme-btn {
   background: linear-gradient(135deg, #ff8800, #ff0055);
   color: #fff;
@@ -1554,6 +1668,28 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
     <button id="token-confirm-btn" class="store-btn buy-theme-btn" style="width:100%;max-width:240px;min-height:44px;" onclick="confirmTokenSelection()">✓ CONFIRM &amp; SAVE</button>
   </div>
 </div>
+
+<!-- ░░░ 8D. HIGHLY PROFITABLE 1-MATCH SKIN RENTAL MODAL ░░░ -->
+<div id="skin-rental-modal" class="rental-modal">
+  <div class="rental-modal-card">
+    <button class="rental-close-btn" onclick="closeSkinRentalModal()">✕</button>
+    <div class="rental-skin-icon" id="rental-modal-icon">🐉</div>
+    <div class="rental-title" id="rental-modal-title">Rent for 1 Match</div>
+    <div class="rental-desc" id="rental-modal-desc">Equip Golden Dragon for your upcoming match!</div>
+    <div class="rental-notice">⚡ 1-Match Rental Only • Resets After Match</div>
+    
+    <div class="rental-options-row">
+      <button class="rental-action-btn btn-coins" onclick="rentSkinWithCoins()">
+        <span class="btn-main">🪙 Pay 20 Coins</span>
+        <span class="btn-sub">From Antigravity DB</span>
+      </button>
+      <button class="rental-action-btn btn-ad" onclick="rentSkinWithAd()">
+        <span class="btn-main">🎬 Watch Ad</span>
+        <span class="btn-sub">Max 2/hr • 6/day</span>
+      </button>
+    </div>
+  </div>
+</div>
 <div id="confetti-container"></div>
 
 <!-- ░░░ 9. TOAST NOTIFICATION ░░░ -->
@@ -1569,6 +1705,7 @@ class WebAudioEngine {
     this.isMuted = localStorage.getItem('lw_muted') === 'true';
     this.bgmTimer = null;
     this.bgmStep = 0;
+    this.isAppActive = true;
   }
 
   init() {
@@ -1584,7 +1721,7 @@ class WebAudioEngine {
     const btn = document.getElementById('audio-toggle-btn');
     if (btn) btn.textContent = this.isMuted ? '🔇' : '🔊';
 
-    if (!this.isMuted && !this.bgmTimer) {
+    if (this.isAppActive && !this.isMuted && !this.bgmTimer) {
       this.startBGM();
     }
   }
@@ -1606,7 +1743,7 @@ class WebAudioEngine {
 
   // 1. Warm wooden Marimba / Kalimba note synthesis with mallet strike
   playMarimbaNote(freq, dur = 0.20, vol = 0.045) {
-    if (this.isMuted || !this.ctx) return;
+    if (!this.isAppActive || this.isMuted || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
 
@@ -1641,7 +1778,7 @@ class WebAudioEngine {
 
   // Soft wooden bass note
   playWoodBass(freq, dur = 0.24, vol = 0.038) {
-    if (this.isMuted || !this.ctx) return;
+    if (!this.isAppActive || this.isMuted || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
@@ -1668,7 +1805,7 @@ class WebAudioEngine {
 
   // 2. Token Move Sound: Satisfying Soft Woodblock / Bubble Pop (~45ms)
   playMoveSound() {
-    if (this.isMuted || !this.ctx) return;
+    if (!this.isAppActive || this.isMuted || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
       const baseFreq = 780 + Math.random() * 80;
@@ -1705,7 +1842,7 @@ class WebAudioEngine {
 
   // 3. Token Capture Sound: Playful Cartoon Boing / Slide
   playCaptureSound() {
-    if (this.isMuted || !this.ctx) return;
+    if (!this.isAppActive || this.isMuted || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
@@ -1744,7 +1881,7 @@ class WebAudioEngine {
 
   // 4. Cheerful Ascending Bell Chime (Rolling 6, Unlocking Pawn, Climbing Ladder, Center Crown)
   playChimeSound() {
-    if (this.isMuted || !this.ctx) return;
+    if (!this.isAppActive || this.isMuted || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
       // Ascending pentatonic chime: C5, E5, G5, C6
@@ -1782,7 +1919,7 @@ class WebAudioEngine {
 
   // 5. Dice Roll Tumble Rattle Sound
   playDiceRollSound() {
-    if (this.isMuted || !this.ctx) return;
+    if (!this.isAppActive || this.isMuted || !this.ctx) return;
     try {
       const now = this.ctx.currentTime;
       for (let i = 0; i < 5; i++) {
@@ -1803,7 +1940,7 @@ class WebAudioEngine {
 
   // 6. Looped Tropical Marimba / Kalimba BGM (Ludo King Style)
   startBGM() {
-    if (this.isMuted || !this.ctx) return;
+    if (!this.isAppActive || this.isMuted || !this.ctx) return;
     this.stopBGM();
 
     // 32-step cheerful tropical marimba pattern (Melody freq, Bass freq)
@@ -1845,7 +1982,7 @@ class WebAudioEngine {
     ];
 
     this.bgmTimer = setInterval(() => {
-      if (this.isMuted || !this.ctx) return;
+      if (!this.isAppActive || this.isMuted || !this.ctx) return;
       const stepData = PATTERN[this.bgmStep % PATTERN.length];
       this.bgmStep++;
 
@@ -1867,7 +2004,7 @@ class WebAudioEngine {
 
   // 7. Cheerful Win Fanfare
   playWinFanfare() {
-    if (this.isMuted || !this.ctx) return;
+    if (!this.isAppActive || this.isMuted || !this.ctx) return;
     try {
       const melody = [
         { f: 523.25, d: 0.12 }, // C5
@@ -1899,6 +2036,7 @@ class WebAudioEngine {
 
   // Strictly pause all audio/BGM when app enters background
   pauseAll() {
+    this.isAppActive = false;
     this.stopBGM();
     if (this.ctx && this.ctx.state === 'running') {
       try { this.ctx.suspend(); } catch (e) {}
@@ -1907,6 +2045,7 @@ class WebAudioEngine {
 
   // Resume all audio/BGM when app returns to foreground
   resumeAll() {
+    this.isAppActive = true;
     if (this.ctx && this.ctx.state === 'suspended') {
       try { this.ctx.resume(); } catch (e) {}
     }
@@ -1917,31 +2056,66 @@ class WebAudioEngine {
 }
 
 const AudioSys = new WebAudioEngine();
+window.AudioSys = AudioSys;
+
 function toggleAudio() {
   AudioSys.toggleMute();
 }
 // Unlock Web Audio on first user interaction anywhere
 window.addEventListener('pointerdown', () => AudioSys.init(), { once: true });
+</script>
 
-// ── CAPACITOR BACKGROUND AUDIO MANAGEMENT (@capacitor/app) ──
-if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-  const { App } = window.Capacitor.Plugins;
+<!-- ── CAPACITOR BACKGROUND AUDIO MANAGEMENT (@capacitor/app) ── -->
+<script type="module">
+import { App } from '@capacitor/app';
+
+// Wire @capacitor/app listener: App.addListener('appStateChange', ...)
+try {
   App.addListener('appStateChange', ({ isActive }) => {
+    console.log('📱 @capacitor/app state change event: isActive =', isActive);
     if (!isActive) {
-      AudioSys.pauseAll();
+      // App is minimized: strictly pause all game background music and sound effects
+      window.AudioSys.pauseAll();
     } else {
-      AudioSys.resumeAll();
+      // App is resumed: resume the background music
+      window.AudioSys.resumeAll();
     }
   });
+} catch (e) {
+  console.warn('Capacitor App module registration notice:', e);
 }
-// Fallback for browser visibility change
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    AudioSys.pauseAll();
-  } else {
-    AudioSys.resumeAll();
+</script>
+<script>
+// Native Capacitor Bridge & Browser visibility change fallback
+(function initCapacitorBridgeListener() {
+  function attach(appPlugin) {
+    if (!appPlugin || typeof appPlugin.addListener !== 'function') return false;
+    try {
+      appPlugin.addListener('appStateChange', ({ isActive }) => {
+        if (!isActive) {
+          window.AudioSys.pauseAll();
+        } else {
+          window.AudioSys.resumeAll();
+        }
+      });
+      return true;
+    } catch (e) { return false; }
   }
-});
+
+  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+    attach(window.Capacitor.Plugins.App);
+  } else if (window.Capacitor && window.Capacitor.App) {
+    attach(window.Capacitor.App);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      window.AudioSys.pauseAll();
+    } else {
+      window.AudioSys.resumeAll();
+    }
+  });
+})();
 </script>
 
 <!-- ════════════════════════════════════════════════════
@@ -1996,12 +2170,12 @@ const HOME_COLS = [
 // 47: [8,2] Left arm 4th cell Star
 const SAFE_INDICES = [0, 8, 13, 21, 26, 34, 39, 47];
 
-// Yard Interior Token Spots (arranged around center of base)
+// Yard Interior Token Spots (arranged perfectly centered in base sockets)
 const YARD_SPOTS = [
-  [[1.4, 1.4], [1.4, 3.6], [3.6, 1.4], [3.6, 3.6]],     // P1 Green TL
-  [[10.4, 1.4], [10.4, 3.6], [12.6, 1.4], [12.6, 3.6]], // P2 Red BL
-  [[1.4, 10.4], [1.4, 12.6], [3.6, 10.4], [3.6, 12.6]], // P3 Yellow TR
-  [[10.4, 10.4], [10.4, 12.6], [12.6, 10.4], [12.6, 12.6]], // P4 Cyan BR
+  [[1.8, 1.8], [1.8, 3.2], [3.2, 1.8], [3.2, 3.2]],     // P1 Green TL
+  [[10.8, 1.8], [10.8, 3.2], [12.2, 1.8], [12.2, 3.2]], // P2 Red BL
+  [[1.8, 10.8], [1.8, 12.2], [3.2, 10.8], [3.2, 12.2]], // P3 Yellow TR
+  [[10.8, 10.8], [10.8, 12.2], [12.2, 10.8], [12.2, 12.2]], // P4 Cyan BR
 ];
 
 const YARD_RANGES = [
@@ -2047,23 +2221,134 @@ let wallet = parseInt(localStorage.getItem('lw_coins') || '500');
 let ownedThemes = JSON.parse(localStorage.getItem('lw_owned') || '["cyber"]');
 let activeThemeId = localStorage.getItem('lw_active_theme') || 'cyber';
 
-// ── 3B. TOKEN / PAWN SKINS & GOOGLE ANTIGRAVITY DATABASE PERSISTENCE ──
+// ── 3B. TOKEN / PAWN SKINS & 1-MATCH RENTAL MONETIZATION ──
 const TOKEN_SKINS = [
-  { id: 'classic', name: 'Cyber Sovereign', icon: '👑', desc: 'Standard Futuristic Neon Pawn' },
-  { id: 'mecha',   name: 'Neon Mecha',     icon: '⚡', desc: 'Armored High-Tech Combat Bot' },
-  { id: 'crystal', name: 'Astral Crystal', icon: '💎', desc: 'Holographic Radiant Gemstone' },
-  { id: 'dragon',  name: 'Golden Dragon',  icon: '🐉', desc: 'Ancient Legendary Mythic Pawn' },
+  { id: 'classic', name: 'Cyber Sovereign', icon: '👑', desc: 'Standard Futuristic Neon Pawn', isFree: true },
+  { id: 'mecha',   name: 'Neon Mecha',     icon: '⚡', desc: 'Armored High-Tech Combat Bot', isFree: false },
+  { id: 'crystal', name: 'Astral Crystal', icon: '💎', desc: 'Holographic Radiant Gemstone', isFree: false },
+  { id: 'dragon',  name: 'Golden Dragon',  icon: '🐉', desc: 'Ancient Legendary Mythic Pawn', isFree: false },
 ];
 
 let selectedTokenSkin = localStorage.getItem('antigravity_token_pref') || localStorage.getItem('lw_selected_token') || 'classic';
+let rentedSkinForMatch = null; // 1-Match Rental ONLY; strictly resets after match
+let pendingRentalSkinId = null;
 
-function selectTokenSkin(skinId) {
-  selectedTokenSkin = skinId;
-  localStorage.setItem('antigravity_token_pref', skinId);
-  localStorage.setItem('lw_selected_token', skinId);
-  renderTokenSkinsGrid();
-  renderAllTokens();
-  showToast(`♟️ ${skinId.toUpperCase()} saved to Google Antigravity DB!`);
+function onSkinCardClick(skinId) {
+  if (skinId === 'classic') {
+    selectedTokenSkin = 'classic';
+    rentedSkinForMatch = null;
+    localStorage.setItem('antigravity_token_pref', 'classic');
+    localStorage.setItem('lw_selected_token', 'classic');
+    renderTokenSkinsGrid();
+    renderAllTokens();
+    showToast('👑 Default Cyber Sovereign skin equipped.');
+    return;
+  }
+
+  // If already rented for upcoming match, equip it
+  if (skinId === rentedSkinForMatch) {
+    selectedTokenSkin = skinId;
+    localStorage.setItem('antigravity_token_pref', skinId);
+    renderTokenSkinsGrid();
+    renderAllTokens();
+    showToast(`⚡ Active 1-Match Rental: ${skinId.toUpperCase()}`);
+    return;
+  }
+
+  // Not classic and not rented: Prompt 1-Match Rental ONLY (No permanent unlocks!)
+  promptSkinRental(skinId);
+}
+
+function promptSkinRental(skinId) {
+  pendingRentalSkinId = skinId;
+  const skin = TOKEN_SKINS.find(s => s.id === skinId) || TOKEN_SKINS[1];
+  const iconEl = document.getElementById('rental-modal-icon');
+  const titleEl = document.getElementById('rental-modal-title');
+  const descEl = document.getElementById('rental-modal-desc');
+
+  if (iconEl) iconEl.textContent = skin.icon;
+  if (titleEl) titleEl.textContent = 'Rent for 1 Match';
+  if (descEl) descEl.textContent = `Rent ${skin.name} for 1 match: Pay 20 Coins or Watch Ad.`;
+
+  const modal = document.getElementById('skin-rental-modal');
+  if (modal) modal.classList.add('open');
+}
+
+function closeSkinRentalModal() {
+  const modal = document.getElementById('skin-rental-modal');
+  if (modal) modal.classList.remove('open');
+  pendingRentalSkinId = null;
+}
+
+function rentSkinWithCoins() {
+  if (!pendingRentalSkinId) return;
+  // Check Antigravity DB (wallet)
+  if (wallet >= 20) {
+    wallet -= 20;
+    saveWallet();
+    updateLobbyCoins();
+    selectedTokenSkin = pendingRentalSkinId;
+    rentedSkinForMatch = pendingRentalSkinId;
+    localStorage.setItem('antigravity_token_pref', pendingRentalSkinId);
+    const skinName = pendingRentalSkinId;
+    closeSkinRentalModal();
+    renderTokenSkinsGrid();
+    renderAllTokens();
+    showToast(`🪙 20 Coins deducted from DB! ${skinName.toUpperCase()} rented for 1 match!`);
+    AudioSys.playChimeSound();
+  } else {
+    alert('Insufficient coins in Antigravity DB! You need at least 20 coins.');
+    showToast('❌ Insufficient coins in Antigravity DB! (Need 20 coins)');
+  }
+}
+
+async function showRewardedAd(rewardTitle, callback) {
+  const cap = checkAdFrequencyCap();
+  if (!cap.allowed) {
+    alert(cap.reason || 'Ad limit reached. Please try again later.');
+    showToast(cap.reason || 'Ad limit reached. Please try again later.');
+    if (callback) callback(false);
+    return false;
+  }
+  const success = await AdMobService.showRewardVideo(rewardTitle || '1-Match Skin Rental');
+  if (callback) callback(success);
+  return success;
+}
+
+function rentSkinWithAd() {
+  if (!pendingRentalSkinId) return;
+  const cap = checkAdFrequencyCap();
+  if (!cap.allowed) {
+    alert(cap.reason || 'Ad limit reached. Please try again later.');
+    showToast(cap.reason || 'Ad limit reached. Please try again later.');
+    return;
+  }
+
+  showRewardedAd(`1-Match Skin: ${pendingRentalSkinId}`, (success) => {
+    if (success) {
+      selectedTokenSkin = pendingRentalSkinId;
+      rentedSkinForMatch = pendingRentalSkinId;
+      localStorage.setItem('antigravity_token_pref', pendingRentalSkinId);
+      const skinName = pendingRentalSkinId;
+      closeSkinRentalModal();
+      renderTokenSkinsGrid();
+      renderAllTokens();
+      showToast(`🎬 Ad reward granted! ${skinName.toUpperCase()} rented for 1 match!`);
+      AudioSys.playChimeSound();
+    }
+  });
+}
+
+function resetRentalSkin() {
+  if (rentedSkinForMatch || selectedTokenSkin !== 'classic') {
+    selectedTokenSkin = 'classic';
+    rentedSkinForMatch = null;
+    localStorage.setItem('antigravity_token_pref', 'classic');
+    localStorage.setItem('lw_selected_token', 'classic');
+    renderTokenSkinsGrid();
+    renderAllTokens();
+    showToast('⏱️ Match ended: Skin reverted to default Cyber Sovereign.');
+  }
 }
 
 function renderTokenSkinsGrid() {
@@ -2072,14 +2357,25 @@ function renderTokenSkinsGrid() {
   grid.innerHTML = '';
   TOKEN_SKINS.forEach(skin => {
     const isSel = selectedTokenSkin === skin.id;
+    const isRented = rentedSkinForMatch === skin.id;
     const card = document.createElement('div');
     card.className = 'token-skin-option' + (isSel ? ' active' : '');
-    card.onclick = () => selectTokenSkin(skin.id);
+    card.onclick = () => onSkinCardClick(skin.id);
+
+    let statusTag = '';
+    if (skin.isFree) {
+      statusTag = isSel ? '<span class="skin-badge active-badge">ACTIVE</span>' : '<span class="skin-badge free-badge">DEFAULT</span>';
+    } else if (isRented) {
+      statusTag = '<span class="skin-badge rental-badge">RENTED (1 MATCH)</span>';
+    } else {
+      statusTag = '<span class="skin-badge lock-badge">🔒 20🪙 / AD</span>';
+    }
+
     card.innerHTML = `
       <div class="token-skin-icon">${skin.icon}</div>
       <div class="token-skin-name">${skin.name}</div>
       <div class="token-skin-desc">${skin.desc}</div>
-      ${isSel ? '<span style="font-size:8px;color:var(--neon);font-weight:900">ACTIVE</span>' : ''}
+      ${statusTag}
     `;
     grid.appendChild(card);
   });
@@ -3847,8 +4143,121 @@ function triggerStampede() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  CRITICAL FIX 2 & 3: RENDER PSEUDO-3D LUDO PAWNS (HARDWARE-ACCELERATED)
+//  CRITICAL FIX 2: DYNAMIC PAWN SKINS & RENDERING LOOP
 // ═══════════════════════════════════════════════════════════════
+function getPawnSkinAsset(skinId, colorHex) {
+  const color = colorHex || '#00ff88';
+  if (skinId === 'mecha') {
+    // Neon Mecha Combat Bot
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 70">
+      <defs>
+        <radialGradient id="mhead" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="40%" stop-color="#00f5ff"/>
+          <stop offset="100%" stop-color="#003b55"/>
+        </radialGradient>
+        <linearGradient id="mbody" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#3b4252"/>
+          <stop offset="50%" stop-color="#1e2330"/>
+          <stop offset="100%" stop-color="#0a0c14"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="30" cy="62" rx="22" ry="7" fill="rgba(0,0,0,0.6)"/>
+      <ellipse cx="30" cy="59" rx="20" ry="6" fill="#1e2330" stroke="#00f5ff" stroke-width="1.5"/>
+      <path d="M 12 59 L 18 36 L 42 36 L 48 59 Z" fill="url(#mbody)" stroke="${color}" stroke-width="1.5"/>
+      <circle cx="30" cy="48" r="5" fill="#00f5ff"/>
+      <circle cx="30" cy="48" r="2.5" fill="#ffffff"/>
+      <polygon points="12,36 18,30 24,36" fill="${color}"/>
+      <polygon points="48,36 42,30 36,36" fill="${color}"/>
+      <rect x="20" y="16" width="20" height="16" rx="4" fill="url(#mhead)" stroke="#00f5ff" stroke-width="1.5"/>
+      <rect x="23" y="21" width="14" height="4" rx="2" fill="#ff0055"/>
+      <line x1="30" y1="16" x2="30" y2="8" stroke="#00f5ff" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="30" cy="7" r="2" fill="#00f5ff"/>
+    </svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  } else if (skinId === 'crystal') {
+    // Astral Crystal Gemstone
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 70">
+      <defs>
+        <linearGradient id="cglow" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="35%" stop-color="#bd93f9"/>
+          <stop offset="70%" stop-color="#50fa7b"/>
+          <stop offset="100%" stop-color="#00f5ff"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="30" cy="62" rx="20" ry="6" fill="rgba(0,0,0,0.5)"/>
+      <ellipse cx="30" cy="59" rx="18" ry="5" fill="#181a29" stroke="#bd93f9" stroke-width="1.5"/>
+      <polygon points="16,59 24,40 36,40 44,59" fill="#282a36" stroke="#bd93f9" stroke-width="1"/>
+      <polygon points="30,6 46,24 30,46 14,24" fill="url(#cglow)" stroke="#ffffff" stroke-width="1.5"/>
+      <polygon points="30,6 38,24 30,46" fill="rgba(255,255,255,0.4)"/>
+      <polygon points="30,6 30,46 22,24" fill="rgba(0,0,0,0.2)"/>
+      <polygon points="14,24 30,24 30,6" fill="rgba(255,255,255,0.6)"/>
+      <polygon points="46,24 30,24 30,6" fill="rgba(255,255,255,0.2)"/>
+      <polygon points="30,12 32,19 39,21 32,23 30,30 28,23 21,21 28,19" fill="#ffffff"/>
+    </svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  } else if (skinId === 'dragon') {
+    // Golden Dragon Ancient Mythic Pawn
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 70">
+      <defs>
+        <radialGradient id="dhead" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#fff275"/>
+          <stop offset="45%" stop-color="#ffb703"/>
+          <stop offset="100%" stop-color="#b07200"/>
+        </radialGradient>
+        <linearGradient id="dbody" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fb8500"/>
+          <stop offset="50%" stop-color="#d46b08"/>
+          <stop offset="100%" stop-color="#5e2900"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="30" cy="62" rx="22" ry="7" fill="rgba(0,0,0,0.6)"/>
+      <ellipse cx="30" cy="59" rx="20" ry="6" fill="#3a1c00" stroke="#ffb703" stroke-width="2"/>
+      <path d="M 12 59 C 16 46, 20 36, 22 30 L 38 30 C 40 36, 44 46, 48 59 Z" fill="url(#dbody)" stroke="#ffd166" stroke-width="1.5"/>
+      <path d="M 24 48 Q 30 52 36 48" stroke="#ffe066" stroke-width="2" fill="none"/>
+      <path d="M 22 41 Q 30 45 38 41" stroke="#ffe066" stroke-width="2" fill="none"/>
+      <path d="M 25 35 Q 30 38 35 35" stroke="#ffe066" stroke-width="1.5" fill="none"/>
+      <circle cx="30" cy="20" r="12" fill="url(#dhead)" stroke="#ffe066" stroke-width="1.5"/>
+      <path d="M 22 14 Q 14 6 10 9 Q 15 14 20 17 Z" fill="#ffd166" stroke="#b07200" stroke-width="1"/>
+      <path d="M 38 14 Q 46 6 50 9 Q 45 14 40 17 Z" fill="#ffd166" stroke="#b07200" stroke-width="1"/>
+      <ellipse cx="30" cy="24" rx="7" ry="5" fill="#f48c06"/>
+      <circle cx="28" cy="25" r="1" fill="#4a1500"/>
+      <circle cx="32" cy="25" r="1" fill="#4a1500"/>
+      <ellipse cx="25" cy="18" rx="2.5" ry="1.8" fill="#ff0055"/>
+      <circle cx="25" cy="18" r="0.8" fill="#ffffff"/>
+      <ellipse cx="35" cy="18" rx="2.5" ry="1.8" fill="#ff0055"/>
+      <circle cx="35" cy="18" r="0.8" fill="#ffffff"/>
+    </svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  } else {
+    // Default: 'classic' (Cyber Sovereign)
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 70">
+      <defs>
+        <radialGradient id="chead" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="45%" stop-color="${color}"/>
+          <stop offset="100%" stop-color="#051a14"/>
+        </radialGradient>
+        <linearGradient id="cbody" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#0a1f18"/>
+          <stop offset="40%" stop-color="${color}"/>
+          <stop offset="70%" stop-color="#b2ffdf"/>
+          <stop offset="100%" stop-color="#0a1f18"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="30" cy="62" rx="22" ry="7" fill="rgba(0,0,0,0.6)"/>
+      <ellipse cx="30" cy="59" rx="20" ry="6" fill="url(#cbody)" stroke="${color}" stroke-width="1.5"/>
+      <path d="M 12 59 C 16 48, 20 34, 22 28 L 38 28 C 40 34, 44 48, 48 59 Z" fill="url(#cbody)" stroke="${color}" stroke-width="1"/>
+      <ellipse cx="30" cy="28" rx="9" ry="3.5" fill="#ffffff" opacity="0.9"/>
+      <circle cx="30" cy="17" r="11" fill="url(#chead)" stroke="${color}" stroke-width="1.5"/>
+      <ellipse cx="26" cy="13" rx="4" ry="2.5" fill="#ffffff" opacity="0.8" transform="rotate(-30 26 13)"/>
+      <polygon points="30,2 26,7 34,7" fill="#ffdd00"/>
+    </svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+}
+
 function renderAllTokens() {
   const currentBoardId = GS.mode === 'ludo' ? 'ludo-board' : 'snl-grid';
   const board = document.getElementById(currentBoardId);
@@ -3883,6 +4292,8 @@ function renderAllTokens() {
         const targetX = c * cellW + cellW / 2 - sizeW / 2 + offset * 3.5;
         const targetY = r * cellH + cellH / 2 - sizeH / 2 + offset * 3.5;
 
+        const desiredSkin = (pIdx === 0) ? (selectedTokenSkin || 'classic') : 'classic';
+
         let el = document.getElementById(`token-${pIdx}-${ti}`);
         if (!el || el.parentElement !== board) {
           el = createPawnTokenElement(p, pIdx, ti, tok);
@@ -3896,11 +4307,19 @@ function renderAllTokens() {
           el.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
           el.classList.toggle('in-yard', !!tok.inYard);
           el.classList.toggle('crowned', !!tok.atHome);
+
+          // Dynamic Pawn Skin Image Update
+          const pawnImg = el.querySelector('.pawn-img');
+          if (pawnImg && pawnImg.getAttribute('data-skin') !== desiredSkin) {
+            pawnImg.src = getPawnSkinAsset(desiredSkin, p.color);
+            pawnImg.setAttribute('data-skin', desiredSkin);
+          }
+
           const lbl = el.querySelector('.token-identifier-text');
           if (lbl) {
             let skinIcon = '';
-            if (pIdx === 0 && selectedTokenSkin && selectedTokenSkin !== 'classic') {
-              const sk = TOKEN_SKINS.find(s => s.id === selectedTokenSkin);
+            if (pIdx === 0 && desiredSkin !== 'classic') {
+              const sk = TOKEN_SKINS.find(s => s.id === desiredSkin);
               if (sk) skinIcon = sk.icon;
             }
             lbl.textContent = tok.atHome ? '👑' : (skinIcon ? skinIcon : (ti + 1));
@@ -3934,6 +4353,8 @@ function renderAllTokens() {
         targetY = row * cellH + cellH / 2 - sizeH / 2;
       }
 
+      const desiredSkin = (pIdx === 0) ? (selectedTokenSkin || 'classic') : 'classic';
+
       let el = document.getElementById(`token-${pIdx}-0`);
       if (!el || el.parentElement !== board) {
         el = createPawnTokenElement(p, pIdx, 0, tok);
@@ -3946,68 +4367,39 @@ function renderAllTokens() {
         el.style.height = sizeH + 'px';
         el.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
         el.classList.toggle('crowned', !!tok.atHome);
+
+        // Dynamic Pawn Skin Image Update for SNL
+        const pawnImg = el.querySelector('.pawn-img');
+        if (pawnImg && pawnImg.getAttribute('data-skin') !== desiredSkin) {
+          pawnImg.src = getPawnSkinAsset(desiredSkin, p.color);
+          pawnImg.setAttribute('data-skin', desiredSkin);
+        }
       }
     });
   }
 }
 
-// Authentic Pseudo-3D Ludo Pawn SVG (Hardware-Accelerated & Customizable)
+// Authentic Ludo Pawn Element with Centered Circular Wrapper and Dynamic Image
 function createPawnTokenElement(p, pIdx, tokenIdx, tok) {
   const el = document.createElement('div');
   el.className = 'token' + (tok.inYard ? ' in-yard' : '') + (tok.atHome ? ' crowned' : '');
   el.id = `token-${pIdx}-${tokenIdx}`;
 
-  const cDark = p.colorDark || '#00552b';
-  const cMain = p.color || '#00ff88';
-  const cLight = p.colorLight || '#7affc4';
+  const currentSkin = (pIdx === 0) ? (selectedTokenSkin || 'classic') : 'classic';
+  const skinAsset = getPawnSkinAsset(currentSkin, p.color);
 
   let skinIcon = '';
-  if (pIdx === 0 && selectedTokenSkin && selectedTokenSkin !== 'classic') {
-    const sk = TOKEN_SKINS.find(s => s.id === selectedTokenSkin);
+  if (pIdx === 0 && currentSkin !== 'classic') {
+    const sk = TOKEN_SKINS.find(s => s.id === currentSkin);
     if (sk) skinIcon = sk.icon;
   }
   const label = tok.atHome ? '👑' : (skinIcon ? skinIcon : (tokenIdx + 1));
 
-  let extraDecoration = '';
-  if (pIdx === 0) {
-    if (selectedTokenSkin === 'mecha') {
-      extraDecoration = `<rect x="13" y="10" width="10" height="2.5" rx="1" fill="#00f5ff" filter="drop-shadow(0 0 3px #00f5ff)"/>`;
-    } else if (selectedTokenSkin === 'crystal') {
-      extraDecoration = `<polygon points="18,5 21,11 18,17 15,11" fill="rgba(255,255,255,0.7)" filter="drop-shadow(0 0 3px #00f5ff)"/>`;
-    } else if (selectedTokenSkin === 'dragon') {
-      extraDecoration = `<path d="M 12 7 Q 10 2 8 4 Q 10 6 12 8 M 24 7 Q 26 2 28 4 Q 26 6 24 8" fill="#ffdd00" filter="drop-shadow(0 0 3px #ffdd00)"/>`;
-    }
-  }
-
   el.innerHTML = `
-    <svg viewBox="0 0 36 44" class="pawn-svg">
-      <defs>
-        <radialGradient id="phead-${pIdx}-${tokenIdx}" cx="35%" cy="30%" r="65%">
-          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-          <stop offset="35%" stop-color="${cMain}"/>
-          <stop offset="100%" stop-color="${cDark}"/>
-        </radialGradient>
-        <linearGradient id="pbody-${pIdx}-${tokenIdx}" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="${cDark}"/>
-          <stop offset="35%" stop-color="${cMain}"/>
-          <stop offset="70%" stop-color="${cLight}"/>
-          <stop offset="100%" stop-color="${cDark}"/>
-        </linearGradient>
-      </defs>
-      <!-- Base Shadow & Rim -->
-      <ellipse cx="18" cy="38" rx="14" ry="4.5" fill="rgba(0,0,0,0.5)"/>
-      <ellipse cx="18" cy="36.5" rx="13" ry="4" fill="url(#pbody-${pIdx}-${tokenIdx})"/>
-      <!-- Conical Waist Body -->
-      <path d="M 7 36.5 C 9.5 30, 12.5 22, 13.5 18 L 22.5 18 C 23.5 22, 26.5 30, 29 36.5 Z" fill="url(#pbody-${pIdx}-${tokenIdx})"/>
-      <!-- Collar Ring -->
-      <ellipse cx="18" cy="18" rx="5.5" ry="2" fill="${cLight}"/>
-      <!-- Shiny Spherical Head -->
-      <circle cx="18" cy="11" r="7" fill="url(#phead-${pIdx}-${tokenIdx})"/>
-      <ellipse cx="15.5" cy="8.5" rx="2.5" ry="1.5" fill="#ffffff" opacity="0.85" transform="rotate(-30 15.5 8.5)"/>
-      ${extraDecoration}
-      <!-- Token Identifier -->
-      <text class="token-identifier-text" x="18" y="32.5" font-family="'Orbitron',sans-serif" font-size="7.5" font-weight="900" fill="#ffffff" text-anchor="middle" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.9))">${label}</text>
-    </svg>
+    <div class="pawn-circle-wrapper">
+      <img class="pawn-img" src="${skinAsset}" data-skin="${currentSkin}" alt="${currentSkin}" />
+      <span class="token-identifier-text">${label}</span>
+    </div>
   `;
 
   el.addEventListener('click', () => onTokenClick(pIdx, tokenIdx));
@@ -4095,6 +4487,7 @@ function checkWin(pIdx) {
     }
 
     renderCornerProfiles();
+    resetRentalSkin(); // Strictly reset 1-match rental skin after match ends
 
     // If the 4th/last remaining player is human: immediately show 'You Lose' screen
     if (loserIdx === 0) {
@@ -4268,6 +4661,7 @@ function closeMenu() {
 }
 function goToLobby() {
   closeMenu();
+  resetRentalSkin();
   clearTimeout(easterEggTimer);
   document.getElementById('easter-snake').style.display = 'none';
   document.getElementById('win-screen').classList.remove('open');
