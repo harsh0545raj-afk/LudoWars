@@ -566,7 +566,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   align-items: center; justify-items: center;
   box-shadow: inset 0 0 14px rgba(0,0,0,0.9);
 }
-.base-socket, .circular-wrapper, .pawn-circle-wrapper {
+.base-socket, .pawn-base-circle, .circular-wrapper, .pawn-circle-wrapper {
   width: 26px; height: 26px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.25) 0%, rgba(0,0,0,0.8) 100%);
@@ -575,7 +575,7 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  position: relative;
+  position: relative !important;
   overflow: visible;
 }
 
@@ -680,26 +680,36 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   cursor: pointer; z-index: 55;
   animation: glowBorderPulse 0.75s ease-in-out infinite;
 }
+.pawn-base-circle,
+.pawn-circle-wrapper,
+.token .pawn-base-circle,
 .token .pawn-circle-wrapper {
-  position: relative;
+  position: relative !important;
   width: 100%; height: 100%;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
 }
+.pawn-image,
+.pawn-img,
+.token .pawn-image,
 .token .pawn-img,
 .base-socket img,
-.circular-wrapper img {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  height: 90%;
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
-  display: block;
+.circular-wrapper img,
+.pawn-base-circle img,
+.pawn-circle-wrapper img {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: 80% !important;
+  max-height: 80% !important;
+  width: 80% !important;
+  height: 80% !important;
+  object-fit: contain !important;
+  display: block !important;
   pointer-events: none;
 }
 .token.hopping .pawn-circle-wrapper,
@@ -1674,16 +1684,16 @@ body.theme-ninja   { background: linear-gradient(180deg, #0a0a0a 0%, #171717 50%
   <div class="rental-modal-card">
     <button class="rental-close-btn" onclick="closeSkinRentalModal()">✕</button>
     <div class="rental-skin-icon" id="rental-modal-icon">🐉</div>
-    <div class="rental-title" id="rental-modal-title">Rent for 1 Match</div>
-    <div class="rental-desc" id="rental-modal-desc">Equip Golden Dragon for your upcoming match!</div>
+    <div class="rental-title" id="rental-modal-title">Rent for 1 Match: Pay 20 Coins OR Watch Ad</div>
+    <div class="rental-desc" id="rental-modal-desc">Rent for 1 Match: Pay 20 Coins OR Watch Ad.</div>
     <div class="rental-notice">⚡ 1-Match Rental Only • Resets After Match</div>
     
     <div class="rental-options-row">
-      <button class="rental-action-btn btn-coins" onclick="rentSkinWithCoins()">
+      <button class="rental-action-btn btn-coins" id="rental-pay-coins-btn" onclick="handlePayCoinsRental()">
         <span class="btn-main">🪙 Pay 20 Coins</span>
         <span class="btn-sub">From Antigravity DB</span>
       </button>
-      <button class="rental-action-btn btn-ad" onclick="rentSkinWithAd()">
+      <button class="rental-action-btn btn-ad" id="rental-watch-ad-btn" onclick="handleWatchAdRental()">
         <span class="btn-main">🎬 Watch Ad</span>
         <span class="btn-sub">Max 2/hr • 6/day</span>
       </button>
@@ -2233,45 +2243,253 @@ let selectedTokenSkin = localStorage.getItem('antigravity_token_pref') || localS
 let rentedSkinForMatch = null; // 1-Match Rental ONLY; strictly resets after match
 let pendingRentalSkinId = null;
 
-function onSkinCardClick(skinId) {
-  if (skinId === 'classic') {
-    selectedTokenSkin = 'classic';
-    rentedSkinForMatch = null;
-    localStorage.setItem('antigravity_token_pref', 'classic');
-    localStorage.setItem('lw_selected_token', 'classic');
-    renderTokenSkinsGrid();
-    renderAllTokens();
-    showToast('👑 Default Cyber Sovereign skin equipped.');
-    return;
-  }
+// ── 3B. GOOGLE ANTIGRAVITY DATABASE ADAPTER & USER PERSISTENCE ──
+const userId = localStorage.getItem('lw_userId') || ('user_' + Math.floor(100000 + Math.random() * 900000));
+localStorage.setItem('lw_userId', userId);
 
-  // If already rented for upcoming match, equip it
-  if (skinId === rentedSkinForMatch) {
-    selectedTokenSkin = skinId;
-    localStorage.setItem('antigravity_token_pref', skinId);
-    renderTokenSkinsGrid();
-    renderAllTokens();
-    showToast(`⚡ Active 1-Match Rental: ${skinId.toUpperCase()}`);
-    return;
+const db = window.db || {
+  collection(colName) {
+    return {
+      doc(docId) {
+        return {
+          async get() {
+            try {
+              const raw = localStorage.getItem(`antigravity_db_${colName}_${docId}`);
+              let data = raw ? JSON.parse(raw) : null;
+              if (!data && colName === 'users') {
+                data = { coins: wallet, userId: docId };
+                localStorage.setItem(`antigravity_db_${colName}_${docId}`, JSON.stringify(data));
+              }
+              return {
+                exists: !!data,
+                data: () => data || { coins: wallet }
+              };
+            } catch (err) {
+              console.warn('Antigravity DB get() fallback error:', err);
+              return { exists: true, data: () => ({ coins: wallet }) };
+            }
+          },
+          async update(updateData) {
+            try {
+              const raw = localStorage.getItem(`antigravity_db_${colName}_${docId}`);
+              let data = raw ? JSON.parse(raw) : { coins: wallet, userId: docId };
+              Object.assign(data, updateData);
+              localStorage.setItem(`antigravity_db_${colName}_${docId}`, JSON.stringify(data));
+              if (typeof updateData.coins === 'number') {
+                wallet = updateData.coins;
+                saveWallet();
+                updateLobbyCoins();
+                updateCoinDisplay();
+              }
+              return true;
+            } catch (err) {
+              console.error('Antigravity DB update() error:', err);
+              throw err;
+            }
+          }
+        };
+      }
+    };
   }
+};
+window.db = db;
 
-  // Not classic and not rented: Prompt 1-Match Rental ONLY (No permanent unlocks!)
-  promptSkinRental(skinId);
+// ── 3C. GLOBAL SKIN APPLICATION FOR ALL 16 PAWNS (JS) ──
+function applySkinGlobally(skinId) {
+  const activeSkin = skinId || selectedTokenSkin || 'classic';
+  selectedTokenSkin = activeSkin;
+
+  // forEach loop iterating over ALL 16 pawns on the board (Player 1, 2, 3, and 4)
+  [0, 1, 2, 3].forEach(pIdx => {
+    const playerColor = (GS && GS.players && GS.players[pIdx]) ? GS.players[pIdx].color : P_COLORS[pIdx];
+    const skinAsset = getPawnSkinAsset(activeSkin, playerColor);
+
+    [0, 1, 2, 3].forEach(ti => {
+      const pawnEl = document.getElementById(`token-${pIdx}-${ti}`);
+      if (pawnEl) {
+        // Dynamically update className to the selected premium skin
+        TOKEN_SKINS.forEach(s => pawnEl.classList.remove(`skin-${s.id}`));
+        pawnEl.classList.add(`skin-${activeSkin}`);
+
+        // Dynamically update src
+        const img = pawnEl.querySelector('.pawn-img, .pawn-image');
+        if (img) {
+          img.src = skinAsset;
+          img.setAttribute('data-skin', activeSkin);
+          img.alt = activeSkin;
+        }
+
+        const lbl = pawnEl.querySelector('.token-identifier-text');
+        if (lbl) {
+          const tok = (GS && GS.players && GS.players[pIdx] && GS.players[pIdx].tokens) ? GS.players[pIdx].tokens[ti] : null;
+          const isAtHome = tok ? tok.atHome : false;
+          let skinIcon = '';
+          if (activeSkin !== 'classic') {
+            const sk = TOKEN_SKINS.find(s => s.id === activeSkin);
+            if (sk) skinIcon = sk.icon;
+          }
+          lbl.textContent = isAtHome ? '👑' : (skinIcon ? skinIcon : (ti + 1));
+        }
+      }
+    });
+  });
+
+  renderAllTokens();
+}
+
+// ── 3D. ROBUST 1-MATCH RENTAL & AD LOGIC (GOOGLE ANTIGRAVITY + ADMOB) ──
+let currentRentalSkinId = null;
+let currentRentalCost = 20;
+
+async function rentPremiumSkin(skinId, cost = 20) {
+  try {
+    currentRentalSkinId = skinId;
+    currentRentalCost = cost;
+    const skin = TOKEN_SKINS.find(s => s.id === skinId) || { id: skinId, name: skinId, icon: '✨' };
+
+    // Step A: Query the Google Antigravity database to check the user's current coin balance
+    let balance = wallet;
+    try {
+      const userDoc = await db.collection('users').doc(userId).get();
+      if (userDoc && typeof userDoc.data === 'function') {
+        const uData = userDoc.data();
+        if (uData && typeof uData.coins === 'number') {
+          balance = uData.coins;
+          wallet = balance;
+        }
+      }
+    } catch (dbErr) {
+      console.warn('Query Antigravity DB failed, using local balance:', dbErr);
+      balance = wallet;
+    }
+
+    // Step B: Prompt the user with a UI Modal: 'Rent for 1 Match: Pay 20 Coins OR Watch Ad'
+    const modal = document.getElementById('skin-rental-modal');
+    const iconEl = document.getElementById('rental-modal-icon');
+    const titleEl = document.getElementById('rental-modal-title');
+    const descEl = document.getElementById('rental-modal-desc');
+
+    if (iconEl) iconEl.textContent = skin.icon || '✨';
+    if (titleEl) titleEl.textContent = `Rent for 1 Match: Pay ${cost} Coins OR Watch Ad`;
+    if (descEl) descEl.textContent = `Rent ${skin.name} for 1 match: Pay ${cost} Coins or Watch Ad. Current DB Balance: ${balance} 🪙`;
+
+    const payBtn = document.getElementById('rental-pay-coins-btn');
+    if (payBtn) payBtn.onclick = () => handlePayCoinsRental();
+    const adBtn = document.getElementById('rental-watch-ad-btn');
+    if (adBtn) adBtn.onclick = () => handleWatchAdRental();
+
+    if (modal) modal.classList.add('open');
+    return true;
+  } catch (err) {
+    console.error('Error in rentPremiumSkin:', err);
+    alert('An unexpected error occurred while opening rental. Please try again.');
+    return false;
+  }
+}
+
+// Step C (Pay Coins)
+async function handlePayCoinsRental() {
+  try {
+    const skinId = currentRentalSkinId;
+    const cost = currentRentalCost || 20;
+
+    // Query Antigravity DB
+    let balance = wallet;
+    try {
+      const userDoc = await db.collection('users').doc(userId).get();
+      if (userDoc && typeof userDoc.data === 'function') {
+        const uData = userDoc.data();
+        if (uData && typeof uData.coins === 'number') {
+          balance = uData.coins;
+        }
+      }
+    } catch (e) {
+      balance = wallet;
+    }
+
+    // If balance >= 20, use await db.collection('users').doc(userId).update({ coins: balance - 20 }).
+    if (balance >= cost) {
+      await db.collection('users').doc(userId).update({ coins: balance - cost });
+      wallet = balance - cost;
+      saveWallet();
+      updateLobbyCoins();
+
+      // On success, apply the skin globally to all 16 pawns and start the match
+      rentedSkinForMatch = skinId;
+      selectedTokenSkin = skinId;
+      localStorage.setItem('antigravity_token_pref', skinId);
+
+      applySkinGlobally(skinId);
+      closeSkinRentalModal();
+      closeTokenSelectModal();
+      showToast(`🪙 ${cost} Coins deducted from Antigravity DB! ${skinId.toUpperCase()} active for this match!`);
+      AudioSys.playChimeSound();
+
+      // Start the match
+      startGame();
+    } else {
+      // If balance < 20 or user chooses Ad: proceed to Ad flow
+      alert(`Insufficient coins in Antigravity DB (Balance: ${balance} 🪙, Required: ${cost} 🪙). Please watch an ad instead.`);
+      await handleWatchAdRental();
+    }
+  } catch (payErr) {
+    console.error('Failed to pay coins in Antigravity DB:', payErr);
+    alert('Payment error in Google Antigravity DB. Please try again.');
+  }
+}
+
+// Step D (Watch Ad)
+async function handleWatchAdRental() {
+  try {
+    const skinId = currentRentalSkinId;
+
+    // Check daily (max 6) and hourly (max 2) ad limits from local storage
+    const cap = checkAdFrequencyCap();
+    if (!cap.allowed) {
+      alert('Ad limits reached. Please try later.');
+      showToast('Ad limits reached. Please try later.');
+      return false;
+    }
+
+    closeSkinRentalModal();
+
+    // If limits allow, strictly await showRewardedAd().
+    // ONLY inside the successful reward callback, apply the skin globally to all 16 pawns and start the match.
+    await showRewardedAd(`1-Match Skin Rental: ${skinId}`, (rewardSuccess) => {
+      if (rewardSuccess) {
+        rentedSkinForMatch = skinId;
+        selectedTokenSkin = skinId;
+        localStorage.setItem('antigravity_token_pref', skinId);
+
+        applySkinGlobally(skinId);
+        closeTokenSelectModal();
+        showToast(`🎬 Ad reward granted! ${skinId.toUpperCase()} active globally for this match!`);
+        AudioSys.playChimeSound();
+
+        // Start the match
+        startGame();
+      } else {
+        alert('Ad was not completed. Skin rental cancelled.');
+        showToast('Ad was not completed.');
+      }
+    });
+    return true;
+  } catch (adErr) {
+    console.error('Error during ad rental:', adErr);
+    alert('Ad limits reached. Please try later.');
+    return false;
+  }
+}
+
+function rentSkinWithCoins() {
+  return handlePayCoinsRental();
+}
+function rentSkinWithAd() {
+  return handleWatchAdRental();
 }
 
 function promptSkinRental(skinId) {
-  pendingRentalSkinId = skinId;
-  const skin = TOKEN_SKINS.find(s => s.id === skinId) || TOKEN_SKINS[1];
-  const iconEl = document.getElementById('rental-modal-icon');
-  const titleEl = document.getElementById('rental-modal-title');
-  const descEl = document.getElementById('rental-modal-desc');
-
-  if (iconEl) iconEl.textContent = skin.icon;
-  if (titleEl) titleEl.textContent = 'Rent for 1 Match';
-  if (descEl) descEl.textContent = `Rent ${skin.name} for 1 match: Pay 20 Coins or Watch Ad.`;
-
-  const modal = document.getElementById('skin-rental-modal');
-  if (modal) modal.classList.add('open');
+  return rentPremiumSkin(skinId, 20);
 }
 
 function closeSkinRentalModal() {
@@ -2280,33 +2498,11 @@ function closeSkinRentalModal() {
   pendingRentalSkinId = null;
 }
 
-function rentSkinWithCoins() {
-  if (!pendingRentalSkinId) return;
-  // Check Antigravity DB (wallet)
-  if (wallet >= 20) {
-    wallet -= 20;
-    saveWallet();
-    updateLobbyCoins();
-    selectedTokenSkin = pendingRentalSkinId;
-    rentedSkinForMatch = pendingRentalSkinId;
-    localStorage.setItem('antigravity_token_pref', pendingRentalSkinId);
-    const skinName = pendingRentalSkinId;
-    closeSkinRentalModal();
-    renderTokenSkinsGrid();
-    renderAllTokens();
-    showToast(`🪙 20 Coins deducted from DB! ${skinName.toUpperCase()} rented for 1 match!`);
-    AudioSys.playChimeSound();
-  } else {
-    alert('Insufficient coins in Antigravity DB! You need at least 20 coins.');
-    showToast('❌ Insufficient coins in Antigravity DB! (Need 20 coins)');
-  }
-}
-
 async function showRewardedAd(rewardTitle, callback) {
   const cap = checkAdFrequencyCap();
   if (!cap.allowed) {
-    alert(cap.reason || 'Ad limit reached. Please try again later.');
-    showToast(cap.reason || 'Ad limit reached. Please try again later.');
+    alert('Ad limits reached. Please try later.');
+    showToast(cap.reason || 'Ad limits reached. Please try later.');
     if (callback) callback(false);
     return false;
   }
@@ -2315,40 +2511,42 @@ async function showRewardedAd(rewardTitle, callback) {
   return success;
 }
 
-function rentSkinWithAd() {
-  if (!pendingRentalSkinId) return;
-  const cap = checkAdFrequencyCap();
-  if (!cap.allowed) {
-    alert(cap.reason || 'Ad limit reached. Please try again later.');
-    showToast(cap.reason || 'Ad limit reached. Please try again later.');
-    return;
-  }
-
-  showRewardedAd(`1-Match Skin: ${pendingRentalSkinId}`, (success) => {
-    if (success) {
-      selectedTokenSkin = pendingRentalSkinId;
-      rentedSkinForMatch = pendingRentalSkinId;
-      localStorage.setItem('antigravity_token_pref', pendingRentalSkinId);
-      const skinName = pendingRentalSkinId;
-      closeSkinRentalModal();
-      renderTokenSkinsGrid();
-      renderAllTokens();
-      showToast(`🎬 Ad reward granted! ${skinName.toUpperCase()} rented for 1 match!`);
-      AudioSys.playChimeSound();
-    }
-  });
-}
-
 function resetRentalSkin() {
   if (rentedSkinForMatch || selectedTokenSkin !== 'classic') {
     selectedTokenSkin = 'classic';
     rentedSkinForMatch = null;
     localStorage.setItem('antigravity_token_pref', 'classic');
     localStorage.setItem('lw_selected_token', 'classic');
+    applySkinGlobally('classic');
     renderTokenSkinsGrid();
-    renderAllTokens();
     showToast('⏱️ Match ended: Skin reverted to default Cyber Sovereign.');
   }
+}
+
+async function onSkinCardClick(skinId) {
+  if (skinId === 'classic') {
+    selectedTokenSkin = 'classic';
+    rentedSkinForMatch = null;
+    localStorage.setItem('antigravity_token_pref', 'classic');
+    localStorage.setItem('lw_selected_token', 'classic');
+    applySkinGlobally('classic');
+    renderTokenSkinsGrid();
+    showToast('👑 Default Cyber Sovereign skin equipped.');
+    return;
+  }
+
+  // If already rented for upcoming match, equip it
+  if (skinId === rentedSkinForMatch) {
+    selectedTokenSkin = skinId;
+    localStorage.setItem('antigravity_token_pref', skinId);
+    applySkinGlobally(skinId);
+    renderTokenSkinsGrid();
+    showToast(`⚡ Active 1-Match Rental: ${skinId.toUpperCase()}`);
+    return;
+  }
+
+  // Not classic and not rented: Prompt 1-Match Rental ONLY (No permanent unlocks!)
+  await rentPremiumSkin(skinId, 20);
 }
 
 function renderTokenSkinsGrid() {
@@ -3144,7 +3342,7 @@ function startGame() {
 
   sizeBoard();
   renderCornerProfiles();
-  renderAllTokens();
+  applySkinGlobally(selectedTokenSkin || 'classic');
   updateCoinDisplay();
   updateRageMeter();
   updateDynamicDicePositionAndColor();
@@ -3328,10 +3526,10 @@ function buildLudoBoard() {
     baseEl.style.gridColumn = `${b.cStart} / ${b.cStart + 6}`;
     baseEl.innerHTML = `
       <div class="base-inner-circle">
-        <div class="base-socket" style="color:${b.color}"></div>
-        <div class="base-socket" style="color:${b.color}"></div>
-        <div class="base-socket" style="color:${b.color}"></div>
-        <div class="base-socket" style="color:${b.color}"></div>
+        <div class="base-socket pawn-base-circle" style="color:${b.color}"></div>
+        <div class="base-socket pawn-base-circle" style="color:${b.color}"></div>
+        <div class="base-socket pawn-base-circle" style="color:${b.color}"></div>
+        <div class="base-socket pawn-base-circle" style="color:${b.color}"></div>
       </div>
     `;
     board.appendChild(baseEl);
@@ -4289,10 +4487,28 @@ function renderAllTokens() {
 
         const sizeW = cellW * 0.88;
         const sizeH = cellH * 1.08;
-        const targetX = c * cellW + cellW / 2 - sizeW / 2 + offset * 3.5;
-        const targetY = r * cellH + cellH / 2 - sizeH / 2 + offset * 3.5;
+        let targetX = c * cellW + cellW / 2 - sizeW / 2 + offset * 3.5;
+        let targetY = r * cellH + cellH / 2 - sizeH / 2 + offset * 3.5;
 
-        const desiredSkin = (pIdx === 0) ? (selectedTokenSkin || 'classic') : 'classic';
+        // Force Perfect Circle Alignment: Align to exact base socket bounding box
+        if (tok.inYard) {
+          const baseEl = board.querySelector(`.base-p${pIdx + 1}`);
+          if (baseEl) {
+            const sockets = baseEl.querySelectorAll('.base-socket, .pawn-base-circle');
+            const socket = sockets[ti];
+            if (socket) {
+              const sRect = socket.getBoundingClientRect();
+              const bRect = board.getBoundingClientRect();
+              if (bRect.width > 0 && sRect.width > 0) {
+                targetX = (sRect.left - bRect.left + sRect.width / 2) - sizeW / 2;
+                targetY = (sRect.top - bRect.top + sRect.height / 2) - sizeH / 2;
+              }
+            }
+          }
+        }
+
+        // Global skin application for all 16 pawns across all players
+        const desiredSkin = selectedTokenSkin || 'classic';
 
         let el = document.getElementById(`token-${pIdx}-${ti}`);
         if (!el || el.parentElement !== board) {
@@ -4308,17 +4524,18 @@ function renderAllTokens() {
           el.classList.toggle('in-yard', !!tok.inYard);
           el.classList.toggle('crowned', !!tok.atHome);
 
-          // Dynamic Pawn Skin Image Update
-          const pawnImg = el.querySelector('.pawn-img');
+          // Dynamic Pawn Skin Image Update for ALL 16 pawns
+          const pawnImg = el.querySelector('.pawn-img, .pawn-image');
           if (pawnImg && pawnImg.getAttribute('data-skin') !== desiredSkin) {
             pawnImg.src = getPawnSkinAsset(desiredSkin, p.color);
             pawnImg.setAttribute('data-skin', desiredSkin);
+            pawnImg.alt = desiredSkin;
           }
 
           const lbl = el.querySelector('.token-identifier-text');
           if (lbl) {
             let skinIcon = '';
-            if (pIdx === 0 && desiredSkin !== 'classic') {
+            if (desiredSkin !== 'classic') {
               const sk = TOKEN_SKINS.find(s => s.id === desiredSkin);
               if (sk) skinIcon = sk.icon;
             }
@@ -4353,7 +4570,7 @@ function renderAllTokens() {
         targetY = row * cellH + cellH / 2 - sizeH / 2;
       }
 
-      const desiredSkin = (pIdx === 0) ? (selectedTokenSkin || 'classic') : 'classic';
+      const desiredSkin = selectedTokenSkin || 'classic';
 
       let el = document.getElementById(`token-${pIdx}-0`);
       if (!el || el.parentElement !== board) {
@@ -4369,10 +4586,11 @@ function renderAllTokens() {
         el.classList.toggle('crowned', !!tok.atHome);
 
         // Dynamic Pawn Skin Image Update for SNL
-        const pawnImg = el.querySelector('.pawn-img');
+        const pawnImg = el.querySelector('.pawn-img, .pawn-image');
         if (pawnImg && pawnImg.getAttribute('data-skin') !== desiredSkin) {
           pawnImg.src = getPawnSkinAsset(desiredSkin, p.color);
           pawnImg.setAttribute('data-skin', desiredSkin);
+          pawnImg.alt = desiredSkin;
         }
       }
     });
@@ -4382,22 +4600,22 @@ function renderAllTokens() {
 // Authentic Ludo Pawn Element with Centered Circular Wrapper and Dynamic Image
 function createPawnTokenElement(p, pIdx, tokenIdx, tok) {
   const el = document.createElement('div');
-  el.className = 'token' + (tok.inYard ? ' in-yard' : '') + (tok.atHome ? ' crowned' : '');
+  const currentSkin = selectedTokenSkin || 'classic';
+  el.className = 'token' + (tok.inYard ? ' in-yard' : '') + (tok.atHome ? ' crowned' : '') + ` skin-${currentSkin}`;
   el.id = `token-${pIdx}-${tokenIdx}`;
 
-  const currentSkin = (pIdx === 0) ? (selectedTokenSkin || 'classic') : 'classic';
   const skinAsset = getPawnSkinAsset(currentSkin, p.color);
 
   let skinIcon = '';
-  if (pIdx === 0 && currentSkin !== 'classic') {
+  if (currentSkin !== 'classic') {
     const sk = TOKEN_SKINS.find(s => s.id === currentSkin);
     if (sk) skinIcon = sk.icon;
   }
   const label = tok.atHome ? '👑' : (skinIcon ? skinIcon : (tokenIdx + 1));
 
   el.innerHTML = `
-    <div class="pawn-circle-wrapper">
-      <img class="pawn-img" src="${skinAsset}" data-skin="${currentSkin}" alt="${currentSkin}" />
+    <div class="pawn-circle-wrapper pawn-base-circle">
+      <img class="pawn-img pawn-image" src="${skinAsset}" data-skin="${currentSkin}" alt="${currentSkin}" />
       <span class="token-identifier-text">${label}</span>
     </div>
   `;
